@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mylog.system.dao.SysArticleDao">
+
+    <resultMap id="BaseResultMap" type="com.mylog.system.entity.article.SysArticle">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="title" column="title" jdbcType="VARCHAR"/>
+            <result property="categoryId" column="categoryId" jdbcType="BIGINT"/>
+            <result property="content" column="content" jdbcType="VARCHAR"/>
+            <result property="cover" column="cover" jdbcType="VARCHAR"/>
+            <result property="excerpt" column="excerpt" jdbcType="VARCHAR"/>
+            <result property="state" column="state" jdbcType="TINYINT"/>
+            <result property="articleType" column="articleType" jdbcType="TINYINT"/>
+            <result property="isTop" column="isTop" jdbcType="TINYINT"/>
+            <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
+            <result property="isRecommend" column="isRecommend" jdbcType="TINYINT"/>
+            <result property="isCarousel" column="isCarousel" jdbcType="TINYINT"/>
+            <result property="sort" column="sort" jdbcType="TINYINT"/>
+            <result property="reprintUrl" column="reprintUrl" jdbcType="VARCHAR"/>
+            <result property="readNum" column="readNum" jdbcType="INTEGER"/>
+            <result property="upNum" column="upNum" jdbcType="INTEGER"/>
+            <result property="commentNum" column="commentNum" jdbcType="INTEGER"/>
+            <result property="collectNum" column="collectNum" jdbcType="INTEGER"/>
+            <result property="createBy" column="createBy" jdbcType="BIGINT"/>
+            <result property="updateBy" column="updateBy" jdbcType="BIGINT"/>
+            <result property="editTime" column="editTime" jdbcType="TIMESTAMP"/>
+            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+        
+        <select id="searchArticleByKeyword" resultType="com.mylog.system.entity.article.vo.SearchArticleByKeywordVO">
+            SELECT
+            a.id,
+            a.title,
+            a.categoryId,
+            c.name as categoryName,
+            a.content,
+            a.cover,
+            a.excerpt,
+            a.state,
+            a.articleType,
+            a.isTop,
+            a.isDelete,
+            a.isRecommend,
+            a.isCarousel,
+            a.sort,
+            a.reprintUrl,
+            a.readNum,
+            a.upNum,
+            a.commentNum,
+            a.collectNum,
+            a.createBy,
+            a.updateBy,
+            a.editTime,
+            a.createTime,
+            a.updateTime
+            FROM
+            sys_article AS a
+            LEFT JOIN sys_article_tag AS atag ON a.id = atag.articleId
+            LEFT JOIN sys_tag AS t ON atag.tagId = t.id
+            LEFT JOIN sys_category AS c ON a.categoryId = c.id
+            <where>
+                a.state in (0,1)
+                and a.isDelete = 0
+                <if test="null != dto.keyword and '' != dto.keyword">
+                    and (a.title like concat('%',#{dto.keyword},'%') OR
+                     a.excerpt like concat('%',#{dto.keyword},'%') OR
+                     a.content like concat('%',#{dto.keyword},'%') or
+                     t.`name` like concat('%',#{dto.keyword},'%'))
+                </if>
+                <if test="null != dto.tagId">
+                    and atag.tagId = #{dto.tagId}
+                </if>
+                <if test="null != dto.categoryId">
+                    and a.categoryId = #{dto.categoryId}
+                </if>
+            </where>
+            GROUP BY a.id
+            ORDER BY a.createTime desc
+        </select>
+        <select id="queryArticleEsAll" resultType="com.mylog.system.entity.article.dto.ArticleEsDTO">
+            SELECT
+            a.id,
+            a.title,
+            a.categoryId,
+            c.name as categoryName,
+            a.content,
+            a.cover,
+            a.excerpt,
+            a.state,
+            a.articleType,
+            a.isTop,
+            a.isDelete,
+            a.isRecommend,
+            a.isCarousel,
+            a.sort,
+            a.reprintUrl,
+            a.createBy,
+            a.updateBy,
+            a.editTime,
+            a.createTime,
+            a.updateTime
+            FROM
+            sys_article AS a
+            LEFT JOIN sys_category AS c ON a.categoryId = c.id
+        </select>
+
+        <select id="listArticleWithDelete" resultType="com.mylog.system.entity.article.dto.ArticleEsDTO">
+            SELECT a.id,
+                   a.title,
+                   a.categoryId,
+                   c.name as categoryName,
+                   a.content,
+                   a.cover,
+                   a.excerpt,
+                   a.state,
+                   a.articleType,
+                   a.isTop,
+                   a.isDelete,
+                   a.isRecommend,
+                   a.isCarousel,
+                   a.sort,
+                   a.reprintUrl,
+                   a.createBy,
+                   a.updateBy,
+                   a.editTime,
+                   a.createTime,
+                   a.updateTime
+            FROM sys_article AS a
+                     LEFT JOIN sys_category AS c ON a.categoryId = c.id
+            <where>
+                and a.updateTime &gt;= #{minUpdateTime}
+            </where>
+        </select>
+</mapper>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mylog.system.dao.SysFileDao">
+
+    <resultMap id="BaseResultMap" type="com.mylog.system.entity.file.SysFile">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="fileUrl" column="fileUrl" jdbcType="VARCHAR"/>
+            <result property="fileName" column="fileName" jdbcType="VARCHAR"/>
+            <result property="fileSize" column="fileSize" jdbcType="INTEGER"/>
+            <result property="fileType" column="fileType" jdbcType="VARCHAR"/>
+            <result property="sort" column="sort" jdbcType="TINYINT"/>
+            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+            <result property="createBy" column="createBy" jdbcType="BIGINT"/>
+    </resultMap>
+</mapper>

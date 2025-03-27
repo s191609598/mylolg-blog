@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mylog.system.dao.SysArticleTagDao">
+
+    <resultMap id="BaseResultMap" type="com.mylog.system.entity.article.SysArticleTag">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="articleId" column="articleId" jdbcType="BIGINT"/>
+        <result property="tagId" column="tagId" jdbcType="BIGINT"/>
+    </resultMap>
+
+
+    <select id="getTagNum" resultType="com.mylog.system.entity.article.vo.TagNumVO">
+        select tagId, COUNT(articleId) as num
+        from sys_article_tag
+        GROUP BY tagId
+    </select>
+</mapper>

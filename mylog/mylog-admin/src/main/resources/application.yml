@@ -1,0 +1,13 @@
+# 端口
+server:
+  port: 7333
+  servlet:
+    context-path: /mylog
+
+# 数据库配置
+spring:
+  profiles:
+    active: dev
+
+
+

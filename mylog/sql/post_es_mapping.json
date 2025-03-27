@@ -1,0 +1,93 @@
+{
+  "aliases": {
+    "article_index": {}
+  },
+  "mappings": {
+    "properties": {
+      "title": {
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "search_analyzer": "ik_smart",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "excerpt": {
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "search_analyzer": "ik_smart",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "content": {
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "search_analyzer": "ik_smart",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "tags": {
+        "type": "keyword"
+      },
+      "tagsIds": {
+        "type": "keyword"
+      },
+      "articleId": {
+        "type": "keyword"
+      },
+      "categoryId": {
+        "type": "keyword"
+      },
+      "categoryName": {
+        "type": "keyword"
+      },
+      "isDelete": {
+        "type": "integer"
+      },
+      "cover": {
+        "type": "keyword"
+      },
+      "state": {
+        "type": "integer"
+      },
+      "articleType": {
+        "type": "integer"
+      },
+      "isTop": {
+        "type": "integer"
+      },
+      "isRecommend": {
+        "type": "integer"
+      },
+      "isCarousel": {
+        "type": "integer"
+      },
+      "sort": {
+        "type": "integer"
+      },
+      "reprintUrl": {
+        "type": "keyword"
+      },
+      "editTime": {
+        "type": "date"
+      },
+      "createTime": {
+        "type": "date"
+      },
+      "updateTime": {
+        "type": "date"
+      }
+    }
+  }
+}

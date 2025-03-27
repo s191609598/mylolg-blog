@@ -1,0 +1,190 @@
+package com.mylog.controller;
+
+import cn.dev33.satoken.annotation.SaIgnore;
+import cn.hutool.core.lang.tree.Tree;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.mylog.common.utils.RedissonUtil;
+import com.mylog.common.utils.resultutils.ErrorCode;
+import com.mylog.common.utils.resultutils.R;
+import com.mylog.common.validator.AssertUtils;
+import com.mylog.common.validator.ValidatorUtils;
+import com.mylog.system.entity.article.dto.SearchArticleByKeywordDTO;
+import com.mylog.system.entity.article.vo.ArticleCarouselVO;
+import com.mylog.system.entity.article.vo.HomeArticleVO;
+import com.mylog.system.entity.article.vo.RecommendArticleVO;
+import com.mylog.system.entity.article.vo.SearchArticleByKeywordVO;
+import com.mylog.system.entity.category.vo.CategoryVO;
+import com.mylog.system.entity.comment.dto.CommentHomeDTO;
+import com.mylog.system.entity.comment.dto.queryCommentDTO;
+import com.mylog.system.entity.tag.vo.HomeTagVO;
+import com.mylog.system.service.SysArticleService;
+import com.mylog.system.service.SysCategoryService;
+import com.mylog.system.service.SysCommentService;
+import com.mylog.system.service.SysTagService;
+import org.redisson.api.RLock;
+import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
+import java.util.List;
+
+/**
+ * 首页接口
+ *
+ * @author pss
+ * @date 2025/2/26
+ */
+@RestController
+@RequestMapping("/home")
+public class HomeController {
+
+
+    @Resource
+    private SysArticleService sysArticleService;
+
+    @Resource
+    private SysTagService sysTagService;
+
+    @Resource
+    private SysCommentService sysCommentService;
+
+    @Resource
+    private SysCategoryService sysCategoryService;
+
+    @Resource
+    private RedissonUtil redissonUtil;
+
+
+    /**
+     * 首页-文章列表
+     *
+     * @return
+     */
+//    @SaIgnore
+//    @PostMapping("/queryhomearticlelist")
+//    public R<IPage<HomeArticleListVO>> queryHomeArticleList(@RequestBody HomeArticleDTO dto) {
+//        IPage<HomeArticleListVO> homeArticleVOIPage = sysArticleService.queryHomeArticleList(dto);
+//        return R.ok(homeArticleVOIPage);
+//    }
+
+    /**
+     * 首页-文章详情
+     *
+     * @param id
+     * @return
+     */
+    @SaIgnore
+    @GetMapping("/gethomearticlebyid")
+    public R<HomeArticleVO> getHomeArticleById(Long id) {
+        AssertUtils.isNull(id, "id不能为空");
+        HomeArticleVO vo = sysArticleService.getHomeArticleById(id);
+        return R.ok(vo);
+    }
+
+    /**
+     * 首页-获取轮播图
+     *
+     * @return
+     */
+    @SaIgnore
+    @GetMapping("/queryarticlecarouselall")
+    public R<List<ArticleCarouselVO>> queryArticleCarouselAll() {
+        List<ArticleCarouselVO> articleCarouselVOS = sysArticleService.queryArticleCarouselAll();
+        return R.ok(articleCarouselVOS);
+    }
+
+    /**
+     * 首页-推荐文章
+     *
+     * @return
+     */
+    @SaIgnore
+    @GetMapping("/queryrecommendarticle")
+    public R<List<RecommendArticleVO>> queryRecommendArticle() {
+        List<RecommendArticleVO> recommendArticleVOS = sysArticleService.queryRecommendArticle();
+        return R.ok(recommendArticleVOS);
+    }
+
+    /**
+     * 首页-搜索文章
+     *
+     * @param dto
+     * @return
+     */
+//    @SaIgnore
+//    @PostMapping("/searcharticlebykeyword")
+//    public R<IPage<SearchArticleByKeywordVO>> searchArticleByKeyword(@RequestBody SearchArticleByKeywordDTO dto) {
+//        IPage<SearchArticleByKeywordVO> searchArticleByKeywordVOIPage = sysArticleService.searchArticleByKeyword(dto);
+//        return R.ok(searchArticleByKeywordVOIPage);
+//    }
+
+    /**
+     * 首页-ES搜索文章
+     *
+     * @param dto
+     * @return
+     */
+    @SaIgnore
+    @PostMapping("/searchfromes")
+    public R<IPage<SearchArticleByKeywordVO>> searchFromEs(@RequestBody SearchArticleByKeywordDTO dto) {
+        IPage<SearchArticleByKeywordVO> searchArticleByKeywordVOIPage = sysArticleService.searchFromEs(dto);
+        return R.ok(searchArticleByKeywordVOIPage);
+    }
+
+    /**
+     * 首页-查询所有标签
+     *
+     * @return
+     */
+    @SaIgnore
+    @GetMapping("/queryhometagall")
+    public R<List<HomeTagVO>> queryHomeTagAll() {
+        List<HomeTagVO> tagAll = sysTagService.queryHomeTagAll();
+        return R.ok(tagAll);
+    }
+
+    /**
+     * 首页文章详情页-提交评论
+     *
+     * @param dto
+     * @return
+     */
+
+    @PostMapping("/submitcomment")
+    public R submitComment(@RequestBody CommentHomeDTO dto) {
+        ValidatorUtils.validateEntity(dto);
+        return R.ok(sysCommentService.submitComment(dto));
+    }
+
+    /**
+     * 首页文章详情页-查询评论
+     *
+     * @param dto
+     * @return
+     */
+    @SaIgnore
+    @PostMapping("/querycommentbyarticleid")
+    public R<IPage<Tree<Long>>> queryCommentByArticleId(@RequestBody queryCommentDTO dto) {
+        ValidatorUtils.validateEntity(dto);
+        AssertUtils.assertIf(dto.getPageSize() != 5, ErrorCode.PARAMS_ERROR);
+        String key = dto.getPageNo() + ":" + dto.getArticleId();
+        RLock lock = redissonUtil.lock(key);
+        IPage<Tree<Long>> treeIPage = null;
+        if (lock.isLocked()) {
+            treeIPage = sysCommentService.queryByArticleId(dto);
+        }
+        redissonUtil.isUnlock(lock);
+        return R.ok(treeIPage);
+    }
+
+
+    /**
+     * 首页-获取所有文章类型
+     *
+     * @return
+     */
+    @SaIgnore
+    @GetMapping("/gethomecategoryall")
+    public R<List<CategoryVO>> getHomeCategoryAll() {
+        return R.ok(sysCategoryService.getCategoryAll());
+    }
+}

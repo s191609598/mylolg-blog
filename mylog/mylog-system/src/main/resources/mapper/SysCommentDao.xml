@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mylog.system.dao.SysCommentDao">
+
+    <resultMap id="BaseResultMap" type="com.mylog.system.entity.comment.SysComment">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="articleId" column="articleId" jdbcType="BIGINT"/>
+            <result property="content" column="content" jdbcType="VARCHAR"/>
+            <result property="upNum" column="upNum" jdbcType="TINYINT"/>
+            <result property="isStick" column="isStick" jdbcType="TINYINT"/>
+            <result property="pid" column="pid" jdbcType="BIGINT"/>
+            <result property="ip" column="ip" jdbcType="VARCHAR"/>
+            <result property="browser" column="browser" jdbcType="VARCHAR"/>
+            <result property="os" column="os" jdbcType="VARCHAR"/>
+            <result property="ipSource" column="ipSource" jdbcType="VARCHAR"/>
+            <result property="createBy" column="createBy" jdbcType="BIGINT"/>
+            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+
+</mapper>
