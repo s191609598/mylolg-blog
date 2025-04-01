@@ -1,5 +1,6 @@
 package com.mylog.controller;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mylog.common.utils.resultutils.IdDTO;
 import com.mylog.common.utils.resultutils.R;
@@ -32,6 +33,7 @@ public class ArticleController {
      * @param dto
      * @return
      */
+    @SaCheckRole("admin")
     @PostMapping("/addarticle")
     public R<Boolean> addArticle(@RequestBody EditArticleDTO dto) {
         ValidatorUtils.validateEntity(dto, AddGroup.class);
@@ -44,6 +46,7 @@ public class ArticleController {
      * @param dto
      * @return
      */
+    @SaCheckRole("admin")
     @PostMapping("/updatearticle")
     public R<Boolean> updateArticle(@RequestBody EditArticleDTO dto) {
         ValidatorUtils.validateEntity(dto, AddGroup.class);
@@ -56,6 +59,7 @@ public class ArticleController {
      * @param
      * @return
      */
+    @SaCheckRole("admin")
     @PostMapping("/updatearticlestatus")
     public R<Boolean> updateArticleStatus(@RequestBody UpdateArticleStatusDTO dto) {
         ValidatorUtils.validateEntity(dto);
@@ -68,6 +72,7 @@ public class ArticleController {
      * @param id
      * @return
      */
+    @SaCheckRole("admin")
     @GetMapping("/getarticlebyid")
     public R<ArticleVO> getArticleById(Long id) {
         AssertUtils.isNull(id, "id不能为空");
@@ -80,6 +85,7 @@ public class ArticleController {
      * @param dto
      * @return
      */
+    @SaCheckRole("admin")
     @PostMapping("/queryarticlelist")
     public R<Page<QueryArticleVO>> queryArticleList(@RequestBody QueryArticleDTO dto) {
         return R.ok(sysArticleService.queryArticleList(dto));
@@ -88,6 +94,7 @@ public class ArticleController {
     /**
      * 删除文章
      */
+    @SaCheckRole("admin")
     @PostMapping("/deletearticle")
     public R<Boolean> deleteArticle(@RequestBody IdDTO id) {
         ValidatorUtils.validateEntity(id);

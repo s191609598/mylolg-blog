@@ -2,12 +2,12 @@
 /* eslint-disable */
 import request from '@/request'
 
-/** addArticle POST /mylog/article/addarticle */
+/** addArticle POST /api/article/addarticle */
 export async function addArticleUsingPost(
   body: API.EditArticleDTO,
   options?: { [key: string]: any }
 ) {
-  return request<Record<string, any>>('/mylog/article/addarticle', {
+  return request<Record<string, any>>('/api/article/addarticle', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -17,9 +17,9 @@ export async function addArticleUsingPost(
   })
 }
 
-/** deleteArticle POST /mylog/article/deletearticle */
+/** deleteArticle POST /api/article/deletearticle */
 export async function deleteArticleUsingPost(body: API.IdDTO, options?: { [key: string]: any }) {
-  return request<Record<string, any>>('/mylog/article/deletearticle', {
+  return request<Record<string, any>>('/api/article/deletearticle', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -29,13 +29,13 @@ export async function deleteArticleUsingPost(body: API.IdDTO, options?: { [key: 
   })
 }
 
-/** getArticleById GET /mylog/article/getarticlebyid */
+/** getArticleById GET /api/article/getarticlebyid */
 export async function getArticleByIdUsingGet(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getArticleByIdUsingGETParams,
   options?: { [key: string]: any }
 ) {
-  return request<Record<string, any>>('/mylog/article/getarticlebyid', {
+  return request<Record<string, any>>('/api/article/getarticlebyid', {
     method: 'GET',
     params: {
       ...params,
@@ -44,12 +44,12 @@ export async function getArticleByIdUsingGet(
   })
 }
 
-/** queryArticleList POST /mylog/article/queryarticlelist */
+/** queryArticleList POST /api/article/queryarticlelist */
 export async function queryArticleListUsingPost(
   body: API.QueryArticleDTO,
   options?: { [key: string]: any }
 ) {
-  return request<Record<string, any>>('/mylog/article/queryarticlelist', {
+  return request<Record<string, any>>('/api/article/queryarticlelist', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -59,12 +59,12 @@ export async function queryArticleListUsingPost(
   })
 }
 
-/** updateArticle POST /mylog/article/updatearticle */
+/** updateArticle POST /api/article/updatearticle */
 export async function updateArticleUsingPost(
   body: API.EditArticleDTO,
   options?: { [key: string]: any }
 ) {
-  return request<Record<string, any>>('/mylog/article/updatearticle', {
+  return request<Record<string, any>>('/api/article/updatearticle', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -74,12 +74,12 @@ export async function updateArticleUsingPost(
   })
 }
 
-/** updateArticleStatus POST /mylog/article/updatearticlestatus */
+/** updateArticleStatus POST /api/article/updatearticlestatus */
 export async function updateArticleStatusUsingPost(
   body: API.UpdateArticleStatusDTO,
   options?: { [key: string]: any }
 ) {
-  return request<Record<string, any>>('/mylog/article/updatearticlestatus', {
+  return request<Record<string, any>>('/api/article/updatearticlestatus', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

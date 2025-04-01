@@ -26,3 +26,4 @@ replay_pid*
 target/
 **/target/
 application-prod.yml
+/mylog/.idea

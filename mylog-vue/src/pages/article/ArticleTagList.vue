@@ -14,11 +14,11 @@
                 <a-card-grid
                   v-for="(tag, index) in tagListData"
                   :key="index"
-                  :class="['tag-item', { 'active-tag': vo?.id === tag.id }]"
+                  :class="['tag-item', { 'active-tag': Number(vo?.id) === Number(tag.id) }]"
                   @click="getTag(tag)"
                 >
                   {{ tag.name }}
-                  <span v-show="(tag.num ?? 0) > 0"  class="tag-count">{{ tag.num }}</span>
+                  <span v-show="(tag.num ?? 0) > 0" class="tag-count">{{ tag.num }}</span>
                 </a-card-grid>
               </div>
             </a-card>
@@ -54,17 +54,18 @@ const queryTagAll = async () => {
     const res = await queryHomeTagAllUsingGet()
     if (res.data.code === 0 && res.data.data) {
       tagListData.value = res.data.data
-      console.log('标签数据加载完成', tagListData.value)
+      // console.log('标签数据加载完成', tagListData.value)
 
       // 自动选择逻辑优化
-      vo.value = tagListData.value.find(tag => tag.id === Number(route.query.tagId)) ?? tagListData.value[0]
-      console.log('初始标签:', vo.value)
+      vo.value =
+        tagListData.value.find((tag) => tag.id === Number(route.query.tagId)) ??
+        tagListData.value[0]
+      // console.log('初始标签:', vo.value)
     }
   } catch (error) {
     console.error('加载标签失败:', error)
   }
 }
-
 
 const getTag = (tag: API.HomeTagVO) => {
   vo.value = tag
@@ -76,7 +77,7 @@ onMounted(() => {
     // 挂载时检查路由参数
     if (route.query.tagId) {
       const initialId = Number(route.query.tagId)
-      const targetTag = tagListData.value.find(tag => tag.id === initialId)
+      const targetTag = tagListData.value.find((tag) => Number(tag.id) === Number(initialId))
       if (targetTag) vo.value = targetTag
     }
   })
@@ -86,7 +87,7 @@ onMounted(() => {
 watch(
   () => route.query.tagId,
   async (newVal) => {
-    console.log('路由参数变化:', newVal)
+    // console.log('路由参数变化:', newVal)
     if (newVal) {
       // 确保数据已加载
       if (tagListData.value.length === 0) {
@@ -100,12 +101,14 @@ watch(
       }
 
       // 添加调试日志
-      console.log('当前标签列表:', tagListData.value)
-      const targetTag = tagListData.value.find(tag => tag.id === numericId)
-      console.log('查找结果:', targetTag)
+      // console.log('当前标签列表:', tagListData.value)
+      // console.log(numericId)
+      const targetTag = tagListData.value.find((tag) => Number(tag.id) === Number(numericId))
+      // console.log('查找结果:', targetTag)
 
       if (targetTag) {
         vo.value = targetTag
+        // console.log('当前标签:', vo.value)
         getTag(targetTag)
       } else {
         console.warn('未找到对应标签，使用默认标签')
@@ -113,7 +116,7 @@ watch(
       }
     }
   },
-  { immediate: true }
+  { immediate: true },
 )
 </script>
 <style scoped>
@@ -218,6 +221,7 @@ watch(
   /* 与现有样式对齐 */
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
 }
+
 /* 激活状态适配 */
 .active-tag .tag-count {
   background: rgba(255, 255, 255, 0.9);

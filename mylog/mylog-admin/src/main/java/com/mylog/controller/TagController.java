@@ -1,7 +1,10 @@
 package com.mylog.controller;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.annotation.SaIgnore;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.mylog.common.annotation.OpLog;
+import com.mylog.common.enums.BusinessType;
 import com.mylog.common.utils.resultutils.IdDTO;
 import com.mylog.common.utils.resultutils.R;
 import com.mylog.common.validator.ValidatorUtils;
@@ -31,6 +34,7 @@ public class TagController {
      *
      * @return
      */
+    @OpLog(title = "获取所有标签名称", businessType = BusinessType.QUERY)
     @SaIgnore
     @GetMapping("/querytagall")
     public R<List<String>> queryTagAll() {
@@ -43,6 +47,7 @@ public class TagController {
      * @param dto
      * @return
      */
+    @SaCheckRole("admin")
     @PostMapping("/querytagpagelist")
     public R<IPage<TagPageListVO>> queryTagPageList(@RequestBody TagPageListDTO dto) {
         IPage<TagPageListVO> tagPageListVOIPage = sysTagService.queryTagPageList(dto);
@@ -55,6 +60,7 @@ public class TagController {
      * @param dto
      * @return
      */
+    @SaCheckRole("admin")
     @PostMapping("/addtag")
     public R<Boolean> addTag(@RequestBody EditTagDTO dto) {
         ValidatorUtils.validateEntity(dto, AddGroup.class);
@@ -68,6 +74,7 @@ public class TagController {
      * @param dto
      * @return
      */
+    @SaCheckRole("admin")
     @PostMapping("/updatetag")
     public R<Boolean> updateTag(@RequestBody EditTagDTO dto) {
         ValidatorUtils.validateEntity(dto, UpdateGroup.class);
@@ -81,6 +88,7 @@ public class TagController {
      * @param id
      * @return
      */
+    @SaCheckRole("admin")
     @PostMapping("/deletetagbyid")
     public R<Boolean> deleteTagById(@RequestBody IdDTO id) {
         ValidatorUtils.validateEntity(id);

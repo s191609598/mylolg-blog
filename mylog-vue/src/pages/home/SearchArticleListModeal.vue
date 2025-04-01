@@ -1,43 +1,49 @@
 <!--首页-搜索数据列表-->
 <template>
-  <!-- 添加外层容器和样式 -->
   <div class="list-container">
-    <a-list
-      item-layout="vertical"
-      size="large"
-      :pagination="false"
-      :data-source="listData"
-      :locale="{ emptyText: '暂无数据' }"
-      class="styled-list"
-    >
-      <template #renderItem="{ item }">
-        <!-- 添加列表项样式 -->
-        <a-list-item key="item.title" class="list-item">
-          <!-- 保持原有内容 -->
-          <template #actions>
-            <span><FolderOutlined /> {{ item.categoryName }}</span>
-            <span><EyeOutlined /> {{ item.readNum }}</span>
-            <span>{{ item.createTime }}</span>
-          </template>
-          <a-list-item-meta :description="highlightText(item.description)">
-            <template #title>
-              <a
-                @click="handleCardClick(item.id)"
-                style="font-size: 22px"
-                v-html="highlightText(item.title)"
-              ></a>
+    <a-spin :spinning="listLoading" tip="加载文章..." size="large" class="list-spin">
+      <a-list
+        item-layout="vertical"
+        size="large"
+        :pagination="false"
+        :data-source="listData"
+        :locale="{ emptyText: '暂无数据' }"
+        class="styled-list"
+      >
+        <template #renderItem="{ item }">
+          <a-list-item key="item.title" class="list-item">
+            <template #actions>
+              <span><FolderOutlined /> {{ item.categoryName }}</span>
+              <span><EyeOutlined /> {{ item.readNum }}</span>
+              <span>{{ item.createTime }}</span>
             </template>
-          </a-list-item-meta>
-          <span v-html="highlightText(item.excerpt)"></span>
-        </a-list-item>
-      </template>
-    </a-list>
+            <a-list-item-meta :description="highlightText(item.description)">
+              <template #title>
+                <a-button
+                  type="link"
+                  @click="handleCardClick(item.id)"
+                  style="font-size: 22px; padding: 0"
+                  :loading="itemLoading === item.id"
+                >
+                  <span v-html="highlightText(item.title)"></span>
+                </a-button>
+              </template>
+            </a-list-item-meta>
+            <span v-html="highlightText(item.excerpt)"></span>
+          </a-list-item>
+        </template>
+      </a-list>
+    </a-spin>
   </div>
 </template>
 <script setup lang="ts">
 import { EyeOutlined, FolderOutlined } from '@ant-design/icons-vue'
-import { defineEmits, defineProps, ref } from 'vue'
+import { defineEmits, defineProps, ref, watch } from 'vue'
 import router from '@/router'
+
+// 新增加载状态
+const listLoading = ref(false)
+const itemLoading = ref<number | null>(null)
 
 const emit = defineEmits(['update:open'])
 
@@ -58,26 +64,25 @@ const highlightText = (text: string = '') => {
 
   return text.replace(regex, '<mark class="highlight">$1</mark>')
 }
-const loading = ref(false)
 
 const handleCardClick = async (id: number) => {
-  loading.value = true
   try {
+    itemLoading.value = id
     await router.push({ name: '文章详情', params: { id: id.toString() } })
-  } finally {
-    loading.value = false
     emit('update:open', false)
+  } finally {
+    itemLoading.value = null
   }
 }
-// 处理卡片点击事件
-// const handleCardClick = (id: number) => {
-//   // router.push({ name: '文章详情', params: { id }, })
-//   // setTimeout(() => {
-//   //   emit('update:open', false)
-//   // }, 100)
-//   // emit('update:open', false)
-//
-// }
+
+// 监听父组件数据变化
+watch(
+  () => props.listData,
+  (newVal) => {
+    listLoading.value = false
+  },
+  { immediate: true },
+)
 </script>
 <style scoped>
 .list-container {
@@ -119,18 +124,41 @@ const handleCardClick = async (id: number) => {
   }
 }
 
+.list-spin {
+  width: 100%;
+  min-height: 200px;
+}
+
+.empty-state img {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 10px;
+}
+
+.empty-state p {
+  font-size: 14px;
+  color: #999;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px; /* 根据需要调整高度 */
+}
+
+.empty-state p {
+  font-size: 14px;
+  color: #999;
+}
 </style>
 
-<style>/* 在组件内添加非scoped样式块 */
+<style>
+/* 在组件内添加非scoped样式块 */
 .highlight {
   background-color: #69b1ff !important;
   color: #003a8c !important;
-  padding: 0 2px;
-  border-radius: 2px;
-  font-style: normal;
-  display: inline-block;
-  line-height: 1.4;
-  transition: background-color 0.3s ease;
 }
 
 .highlight:hover {

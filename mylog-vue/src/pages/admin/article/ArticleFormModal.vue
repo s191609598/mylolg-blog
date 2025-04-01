@@ -24,22 +24,11 @@
       </a-form-item>
       <a-form-item label="文章封面" name="cover">
         <div class="clearfix">
-          <!--          <a-upload-->
-          <!--            :action="actionUrl"-->
-          <!--            list-type="picture-card"-->
-          <!--            v-model:file-list="fileList"-->
-          <!--            @preview="handlePreview"-->
-          <!--            @change="handleChangeUpload"-->
-          <!--            :withCredentials="true"-->
-          <!--            :before-upload="beforeUpload"-->
-          <!--            @remove="handleRemoveUpload"-->
-          <!--          >-->
           <a-upload
-            :customRequest="customUpload"
             list-type="picture-card"
             v-model:file-list="fileList"
             @preview="handlePreview"
-            @change="handleChangeUpload"
+            :customRequest="customUpload"
             :before-upload="beforeUpload"
             @remove="handleRemoveUpload"
           >
@@ -114,7 +103,7 @@ import { config, MdEditor, XSSPlugin } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
 import { getDefaultWhiteList } from 'xss'
 import { getCategoryAllUsingGet } from '@/api/categoryController.ts'
-import { baseUrl } from '@/config/config.ts'
+import { baseUrl, uploadUrl, uploadcoverUrl } from '@/config/config.ts'
 import myAxios from '@/request.ts'
 
 const props = defineProps<{
@@ -129,7 +118,7 @@ const emit = defineEmits<{
 
 const size = ref<SelectProps['size']>('middle')
 
-const actionUrl = baseUrl + '/mylog/file/upload'
+const actionUrl = baseUrl + uploadcoverUrl
 
 // MdEditor 的 xss 配置
 config({
@@ -273,7 +262,7 @@ watch(
     if (newVal) {
       Object.assign(formState, newVal)
       // 将数字转换为对应的中文文本
-      formState.articleType = Number(newVal?.articleType) || 0
+      articleType: Number(newVal.articleType) || 0;
       // 仅当 cover 不为空字符串时，添加到 fileList
       if (newVal.cover) {
         fileList.value = [
@@ -339,47 +328,33 @@ const beforeUpload = (file: File) => {
   return isJpgOrPng && isLt2M
 }
 
-// 上传图片-获取文件信息
-// const handleChangeUpload = (info: any) => {
-//   if (info.file.status !== 'uploading') {
-//     //console.log(info.file, info.fileList)
-//   }
+// const handleChangeUpload = async (info: any) => {
 //   if (info.file.status === 'done') {
-//     console.log(info.file.response)
-//     // formState.cover = info.file.response.data.fileUrl // 假设服务器返回的 URL 存在于 response.url
-//     formState.cover = info.file.response.data.data.fileUrl // 假设服务器返回的 URL 存在于 response.url
-//   } else if (info.file.status === 'error') {
-//     message.error(`${info.file.name} 文件上传失败`)
+//     try {
+//       // 统一使用封装请求工具
+//       const formData = new FormData()
+//       formData.append('file', info.file.originFileObj)
+//
+//       const response = await myAxios.post(actionUrl, formData, {
+//         headers: { 'Content-Type': 'multipart/form-data' },
+//       })
+//
+//       if (response.data.code === 0) {
+//         formState.cover = response.data.data.fileUrl
+//         message.success('封面图片上传成功')
+//       } else {
+//         message.error(response.data.msg || '上传失败')
+//       }
+//     } catch (error) {
+//       message.error('上传失败：' + (error as Error).message)
+//     }
 //   }
 // }
 
-const handleChangeUpload = async (info: any) => {
-  if (info.file.status === 'done') {
-    try {
-      // 统一使用封装请求工具
-      const formData = new FormData()
-      formData.append('file', info.file.originFileObj)
-
-      const response = await myAxios.post(actionUrl, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      })
-
-      if (response.data.code === 0) {
-        formState.cover = response.data.data.fileUrl
-        message.success('封面图片上传成功')
-      } else {
-        message.error(response.data.msg || '上传失败')
-      }
-    } catch (error) {
-      message.error('上传失败：' + (error as Error).message)
-    }
-  }
-}
-
 // 上传图片-删除
 const handleRemoveUpload = async (fileinfo: any) => {
-  console.log(fileinfo.id)
-  const id = fileinfo.id
+  // console.log(fileinfo.id)
+  // const id = fileinfo.id
   // if (!id) {
   //   const id = fileinfo.response.data.id
   //   console.log(id)
@@ -400,22 +375,6 @@ function getBase64(file: File) {
 }
 
 // 上传文件-预览图片
-// const handlePreview = async (file: FileItem) => {
-//   //console.log("handlePreview",file)
-//   if (!file.originFileObj) {
-//     message.error('文件对象不存在，无法预览')
-//     return
-//   }else if (!file.url) {
-//
-//   }
-//   if (!file.url && !file.preview) {
-//     file.preview = (await getBase64(file.originFileObj)) as string
-//   }
-//   previewImage.value = file.url || file.preview
-//   previewVisible.value = true
-// }
-
-// 上传文件-预览图片
 const handlePreview = async (file: FileItem) => {
   if (file.url) {
     previewImage.value = file.url
@@ -433,56 +392,12 @@ const handlePreview = async (file: FileItem) => {
   }
 }
 
-// MdEditor 的 图片上传
-// const onUploadImg = async (files: File[], callback) => {
-//   const res = await Promise.all(
-//     files.map((file) => {
-//       return new Promise((rev, rej) => {
-//         const form = new FormData()
-//         form.append('file', file)
-//         axios
-//           .post(actionUrl, form, {
-//             headers: {
-//               'Content-Type': 'multipart/form-data',
-//             },
-//             withCredentials: true,
-//           })
-//           .then((res) => rev(res))
-//           .catch((error) => rej(error))
-//       })
-//     }),
-//   )
-//   callback(res.map((item) => item.data.data.fileUrl))
-// }
-// const onUploadImg = async (files: File[], callback) => {
-//   try {
-//     console.log(111)
-//     const uploadPromises = files.map(async (file) => {
-//       const form = new FormData()
-//       form.append('file', file)
-//       // 使用封装后的请求工具
-//       const response = await myAxios.post('/mylog/file/upload', form, {
-//         headers: {
-//           'Content-Type': 'multipart/form-data',
-//         },
-//       })
-//       return response.data.data.fileUrl // 根据实际响应结构调整
-//     })
-//
-//     const urls = await Promise.all(uploadPromises)
-//     callback(urls)
-//   } catch (error) {
-//     message.error('图片上传失败')
-//     callback([])
-//   }
-// }
-
 const onUploadImg = async (files: File[], callback: (urls: string[]) => void) => {
   try {
     const uploadPromises = files.map(async (file) => {
       const form = new FormData()
       form.append('file', file)
-      const response = await myAxios.post('/mylog/file/upload', form, {
+      const response = await myAxios.post(uploadUrl, form, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
       return response.data.data.fileUrl
@@ -497,11 +412,9 @@ const onUploadImg = async (files: File[], callback: (urls: string[]) => void) =>
 
 const customUpload = async (options: any) => {
   const { file, onProgress, onSuccess, onError } = options
-
   try {
     const formData = new FormData()
     formData.append('file', file)
-
     const response = await myAxios.post(actionUrl, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
       onUploadProgress: (progressEvent) => {
@@ -512,9 +425,10 @@ const customUpload = async (options: any) => {
         onProgress({ percent })
       },
     })
-
     if (response.data.code === 0) {
+      formState.cover = response.data.data.fileUrl
       onSuccess(response.data.data)
+      message.success('封面图片上传成功')
     } else {
       throw new Error(response.data.msg)
     }
@@ -522,6 +436,7 @@ const customUpload = async (options: any) => {
     onError(error)
   }
 }
+
 </script>
 
 <style lang="less">

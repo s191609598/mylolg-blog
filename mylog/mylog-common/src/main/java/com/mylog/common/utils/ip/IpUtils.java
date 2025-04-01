@@ -1,5 +1,7 @@
 package com.mylog.common.utils.ip;
 
+import cn.hutool.core.net.NetUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson2.JSONObject;
 import com.mylog.common.utils.StringUtils;
 import com.mylog.common.utils.http.EscapeUtil;
@@ -53,7 +55,30 @@ public class IpUtils {
         if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getRemoteAddr();
         }
+        boolean b = internalIp(ip);
+        if (b) {
+            return "127.0.0.1";
+        }
         return "0:0:0:0:0:0:0:1".equals(ip) ? "127.0.0.1" : EscapeUtil.clean(ip);
+    }
+
+
+    public static String getAddress(HttpServletRequest request) {
+        String resultJson = "内部IP";
+
+        String ip = getIp(request);
+
+        //如果是本地ip或局域网ip，则直接不查询
+        try {
+            if (StringUtils.isEmpty(ip) || NetUtil.isInnerIP(ip) || internalIp(ip)) {
+                return resultJson;
+            } else {
+                return getIpAddr(ip);
+            }
+        } catch (Exception e) {
+
+        }
+        return resultJson;
     }
 
     public static String getIpAddr(String ip) {

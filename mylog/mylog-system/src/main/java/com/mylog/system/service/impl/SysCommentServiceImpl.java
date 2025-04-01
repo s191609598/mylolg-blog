@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mylog.common.constant.Constants;
+import com.mylog.common.constant.RedisConstants;
 import com.mylog.common.utils.ConvertUtils;
 import com.mylog.common.utils.DateUtil;
 import com.mylog.common.utils.StringUtils;
@@ -83,8 +84,8 @@ public class SysCommentServiceImpl extends ServiceImpl<SysCommentDao, SysComment
             CommentHomeTreeVO vo = ConvertUtils.sourceToTarget(sysComment, CommentHomeTreeVO.class);
             this.setUserName(vo);
             if (StringUtils.isNotNull(sysComment.getRootId())) {
-                Integer index = redisCacheUtils.getCacheObject(Constants.REDIS_ARTICLE_COMMENT_INDEX + sysComment.getRootId());
-                CommentHomeTreeVO vo1 = (CommentHomeTreeVO) redisCacheUtils.getCacheIndexList(Constants.REDIS_ARTICLE_COMMENT + articleId, index);
+                Integer index = redisCacheUtils.getCacheObject(RedisConstants.REDIS_ARTICLE_COMMENT_INDEX + sysComment.getRootId());
+                CommentHomeTreeVO vo1 = (CommentHomeTreeVO) redisCacheUtils.getCacheIndexList(RedisConstants.REDIS_ARTICLE_COMMENT + articleId, index);
                 if (StringUtils.isEmpty(vo1.getChildren())) {
                     vo1.setChildren(new ArrayList<>());
                     CommentHomeTreeVO node = new CommentHomeTreeVO();
@@ -93,15 +94,15 @@ public class SysCommentServiceImpl extends ServiceImpl<SysCommentDao, SysComment
                     vo1.getChildren().add(node);
                 }
                 vo1.getChildren().add(vo);
-                redisCacheUtils.setCacheSetList(Constants.REDIS_ARTICLE_COMMENT + articleId, index, vo1);
+                redisCacheUtils.setCacheSetList(RedisConstants.REDIS_ARTICLE_COMMENT + articleId, index, vo1);
             } else {
-                redisCacheUtils.setCacheRightPushList(Constants.REDIS_ARTICLE_COMMENT + articleId, vo);
-                redisCacheUtils.incrementValue(Constants.REDIS_ARTICLE_COMMENT_ROOT_SIZE + articleId);
-                Long cacheListSize = redisCacheUtils.getCacheListSize(Constants.REDIS_ARTICLE_COMMENT + articleId);
+                redisCacheUtils.setCacheRightPushList(RedisConstants.REDIS_ARTICLE_COMMENT + articleId, vo);
+                redisCacheUtils.incrementValue(RedisConstants.REDIS_ARTICLE_COMMENT_ROOT_SIZE + articleId);
+                Long cacheListSize = redisCacheUtils.getCacheListSize(RedisConstants.REDIS_ARTICLE_COMMENT + articleId);
                 Integer index = Math.toIntExact(cacheListSize - 1);
-                redisCacheUtils.setCacheObject(Constants.REDIS_ARTICLE_COMMENT_INDEX + sysComment.getId(), index);
+                redisCacheUtils.setCacheObject(RedisConstants.REDIS_ARTICLE_COMMENT_INDEX + sysComment.getId(), index);
             }
-            redisCacheUtils.incrementValue(Constants.REDIS_ARTICLE_COMMENT_TOTAL + articleId);
+            redisCacheUtils.incrementValue(RedisConstants.REDIS_ARTICLE_COMMENT_TOTAL + articleId);
         }
         return save;
     }
@@ -119,7 +120,7 @@ public class SysCommentServiceImpl extends ServiceImpl<SysCommentDao, SysComment
         AssertUtils.isNull(articleId, "文章id不能为空");
         int pageNo = dto.getPageNo();
         int pageSize = dto.getPageSize();
-        Integer rootSize = redisCacheUtils.getCacheObject(Constants.REDIS_ARTICLE_COMMENT_ROOT_SIZE + articleId);
+        Integer rootSize = redisCacheUtils.getCacheObject(RedisConstants.REDIS_ARTICLE_COMMENT_ROOT_SIZE + articleId);
         if (StringUtils.isNull(rootSize)) {
             rootSize = 0;
         }
@@ -143,7 +144,7 @@ public class SysCommentServiceImpl extends ServiceImpl<SysCommentDao, SysComment
         } else {
             size = pageSize - 1;
         }
-        vo = redisCacheUtils.getCacheList(Constants.REDIS_ARTICLE_COMMENT + articleId, current, size);
+        vo = redisCacheUtils.getCacheList(RedisConstants.REDIS_ARTICLE_COMMENT + articleId, current, size);
         //没有缓存 从数据库查询  并 缓存到redis
         if (StringUtils.isEmpty(vo)) {
             QueryWrapper<SysComment> wq = new QueryWrapper<>();
@@ -157,10 +158,10 @@ public class SysCommentServiceImpl extends ServiceImpl<SysCommentDao, SysComment
                 return null;
             }
             listSize = list.getTotal();
-            redisCacheUtils.setCacheObject(Constants.REDIS_ARTICLE_COMMENT_ROOT_SIZE + articleId, Integer.valueOf(listSize.toString()), 60 * 60 * 24, TimeUnit.SECONDS);
+            redisCacheUtils.setCacheObject(RedisConstants.REDIS_ARTICLE_COMMENT_ROOT_SIZE + articleId, Integer.valueOf(listSize.toString()), 60 * 60 * 24, TimeUnit.SECONDS);
             vo = ConvertUtils.sourceToTarget(list.getRecords(), CommentHomeTreeVO.class);
 
-            boolean exists = redisCacheUtils.exists(Constants.REDIS_ARTICLE_COMMENT + articleId);
+            boolean exists = redisCacheUtils.exists(RedisConstants.REDIS_ARTICLE_COMMENT + articleId);
 
             AtomicInteger atomicInteger = new AtomicInteger(0);
             if (exists) {
@@ -168,7 +169,7 @@ public class SysCommentServiceImpl extends ServiceImpl<SysCommentDao, SysComment
             }
             vo.forEach(i -> {
                 Long rootid = i.getId();
-                redisCacheUtils.setCacheObject(Constants.REDIS_ARTICLE_COMMENT_INDEX + rootid, atomicInteger.getAndIncrement(), 60 * 60 * 24, TimeUnit.SECONDS);
+                redisCacheUtils.setCacheObject(RedisConstants.REDIS_ARTICLE_COMMENT_INDEX + rootid, atomicInteger.getAndIncrement(), 60 * 60 * 24, TimeUnit.SECONDS);
             });
 
             //查询子节点
@@ -177,7 +178,7 @@ public class SysCommentServiceImpl extends ServiceImpl<SysCommentDao, SysComment
             this.setUserName(vo);
 
             //缓存数据
-            redisCacheUtils.setCacheRightPushList(Constants.REDIS_ARTICLE_COMMENT + articleId, vo);
+            redisCacheUtils.setCacheRightPushList(RedisConstants.REDIS_ARTICLE_COMMENT + articleId, vo);
         }
         if (StringUtils.isNotEmpty(vo)) {
             List<CommentHomeTreeVO> newList = new ArrayList<>();

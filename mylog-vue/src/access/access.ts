@@ -2,12 +2,14 @@ import router from '@/router'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import ACCESS_ENUM from '@/access/accessEnum.ts'
 import checkAccess from '@/access/checkAccess.ts'
+import type { Ref } from 'vue'
+import { inject } from 'vue'
 
 /**
  * 全局权限校验，每次路由跳转时，校验用户是否登录，以及用户是否有权限访问该页面
  */
 //是否为首次获取用户信息
-let first = true
+const first = inject('first') as Ref<boolean | null>
 
 router.beforeEach(async (to, from, next) => {
   const loginUserStore = useLoginUserStore()
@@ -16,13 +18,13 @@ router.beforeEach(async (to, from, next) => {
   if (first) {
     await loginUserStore.getUserInfo()
     loginUser = loginUserStore.loginUser
-    first = false;
+    first.value = false
   }
   // // 如果之前没登陆过，自动登录
   if (!loginUser || !loginUser.userRole) {
     // 加 await 是为了等用户登录成功之后，再执行后续的代码
-    await loginUserStore.getUserInfo();
-    loginUser = loginUserStore.loginUser;
+    await loginUserStore.getUserInfo()
+    loginUser = loginUserStore.loginUser
   }
 
   const needAccess = (to.meta?.access as string) ?? ACCESS_ENUM.NOT_LOGIN
@@ -41,19 +43,4 @@ router.beforeEach(async (to, from, next) => {
     }
   }
   next()
-  // const toUrl = to.fullPath
-  // //自定义权限规则
-  // //管理员权限
-  // if (toUrl.startsWith('/admin')) {
-  //   if (!loginUser || !loginUser.userRole){
-  //     next('/user/login')
-  //     return
-  //   }
-  //   if (loginUser.userRole !== 'admin') {
-  //     message.error('无权限访问')
-  //     next('/')
-  //     return
-  //   }
-  // }
-  // next()
 })

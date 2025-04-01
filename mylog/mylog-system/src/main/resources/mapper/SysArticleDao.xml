@@ -107,7 +107,7 @@
             LEFT JOIN sys_category AS c ON a.categoryId = c.id
         </select>
 
-        <select id="listArticleWithDelete" resultType="com.mylog.system.entity.article.dto.ArticleEsDTO">
+        <select id="listSyncArticle" resultType="com.mylog.system.entity.article.dto.ArticleEsDTO">
             SELECT a.id,
                    a.title,
                    a.categoryId,

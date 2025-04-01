@@ -21,37 +21,21 @@ public class RedissonUtil {
      * @return org.redisson.api.RLock
      */
     public RLock lock(String lockKey) {
+        return lock(lockKey, 3, 10);
+    }
+
+    public RLock lock(String lockKey, long waitTime, long leaseTime) {
         RLock lock = redissonClient.getFairLock(lockKey);
-        lock.lock();
+        try {
+            if (lock.tryLock(waitTime, leaseTime, TimeUnit.SECONDS)) {
+                return lock;
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         return lock;
     }
 
-    /**
-     * leaseTime为加锁时间，单位为秒
-     *
-     * @param lockKey
-     * @param leaseTime
-     * @return org.redisson.api.RLock
-     */
-    public RLock lock(String lockKey, long leaseTime) {
-        RLock lock = redissonClient.getFairLock(lockKey);
-        lock.lock(leaseTime, TimeUnit.SECONDS);
-        return null;
-    }
-
-    /**
-     * timeout为加锁时间，时间单位由unit确定
-     *
-     * @param lockKey
-     * @param unit
-     * @param timeout
-     * @return org.redisson.api.RLock
-     */
-    public RLock lock(String lockKey, TimeUnit unit, long timeout) {
-        RLock lock = redissonClient.getFairLock(lockKey);
-        lock.lock(timeout, unit);
-        return lock;
-    }
 
     /**
      * 尝试获取锁

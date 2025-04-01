@@ -1,5 +1,6 @@
 package com.mylog.controller;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.mylog.common.utils.resultutils.IdDTO;
 import com.mylog.common.utils.resultutils.R;
@@ -31,6 +32,7 @@ public class CategoryController {
      *
      * @return
      */
+    @SaCheckRole("admin")
     @GetMapping("/querycategoryall")
     public R<List<CategoryVO>> getCategoryAll() {
         return R.ok(sysCategoryService.getCategoryAll());
@@ -43,6 +45,7 @@ public class CategoryController {
      * @param dto
      * @return
      */
+    @SaCheckRole("admin")
     @PostMapping("/queryCategorypagelist")
     public R<IPage<CategoryPageListVO>> queryCategoryPageList(@RequestBody CategoryPageListDTO dto) {
         IPage<CategoryPageListVO> CategoryPageListVOIPage = sysCategoryService.queryCategoryPageList(dto);
@@ -55,6 +58,7 @@ public class CategoryController {
      * @param dto
      * @return
      */
+    @SaCheckRole("admin")
     @PostMapping("/addCategory")
     public R<Boolean> addCategory(@RequestBody EditCategoryDTO dto) {
         ValidatorUtils.validateEntity(dto, AddGroup.class);
@@ -68,6 +72,7 @@ public class CategoryController {
      * @param dto
      * @return
      */
+    @SaCheckRole("admin")
     @PostMapping("/updateCategory")
     public R<Boolean> updateCategory(@RequestBody EditCategoryDTO dto) {
         ValidatorUtils.validateEntity(dto, UpdateGroup.class);
@@ -81,6 +86,7 @@ public class CategoryController {
      * @param id
      * @return
      */
+    @SaCheckRole("admin")
     @PostMapping("/deletecategorybyid")
     public R<Boolean> deleteCategoryById(@RequestBody IdDTO id) {
         ValidatorUtils.validateEntity(id);

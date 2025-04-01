@@ -1,5 +1,7 @@
 package com.mylog.common.annotation;
 
+import com.mylog.common.constant.Constants;
+
 import java.lang.annotation.*;
 
 /**
@@ -15,7 +17,7 @@ public @interface RepeatSubmit {
     /**
      * 间隔时间(ms)，小于此时间视为重复提交
      */
-    public int interval() default 5000;
+    public int interval() default Constants.REPEAT_SUBMIT_INTERVAL;
 
     /**
      * 提示消息

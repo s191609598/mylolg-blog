@@ -7,6 +7,7 @@ import com.mylog.system.entity.user.SysUser;
 import com.mylog.system.entity.user.dto.*;
 import com.mylog.system.entity.user.vo.QueryUserVO;
 import com.mylog.system.entity.user.vo.UserVO;
+import org.springframework.scheduling.annotation.Async;
 
 /**
  * 系统用户表
@@ -89,6 +90,11 @@ public interface SysUserService extends IService<SysUser> {
      * @return
      */
     boolean editUser(EditUserDTO dto);
+
+
+    @Async
+    void updateUserLoginDate(Long id);
+
 
 }
 

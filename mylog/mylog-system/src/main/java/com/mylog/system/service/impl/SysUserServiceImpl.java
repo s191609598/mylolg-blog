@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mylog.common.constant.Constants;
+import com.mylog.common.constant.RedisConstants;
 import com.mylog.common.enums.UserRoleEnum;
 import com.mylog.common.exception.MyException;
 import com.mylog.common.utils.ConvertUtils;
@@ -14,7 +15,7 @@ import com.mylog.common.utils.StringUtils;
 import com.mylog.common.utils.ip.IpUtils;
 import com.mylog.common.utils.resultutils.ErrorCode;
 import com.mylog.common.validator.AssertUtils;
-import com.mylog.system.dao.UserDao;
+import com.mylog.system.dao.SysUserDao;
 import com.mylog.system.entity.user.SysUser;
 import com.mylog.system.entity.user.dto.*;
 import com.mylog.system.entity.user.vo.QueryUserVO;
@@ -37,7 +38,7 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
-public class SysUserServiceImpl extends ServiceImpl<UserDao, SysUser> implements SysUserService {
+public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> implements SysUserService {
 
     @Resource
     RedisCacheUtils redisCacheUtils;
@@ -86,7 +87,7 @@ public class SysUserServiceImpl extends ServiceImpl<UserDao, SysUser> implements
         StpUtil.login(user.getId());
         SaTokenInfo tokenInfo = StpUtil.getTokenInfo();
         //异步更新登录时间 登录IP 同时更新用户信息到redis
-        this.updateUserLoginDate(user.getId());
+//        this.updateUserLoginDate(user.getId());
         return SaResult.data(tokenInfo);
     }
 
@@ -100,13 +101,18 @@ public class SysUserServiceImpl extends ServiceImpl<UserDao, SysUser> implements
         //退出登录
         StpUtil.logout();
         //删除缓存
-        redisCacheUtils.deleteObject(Constants.REDIS_USERID + id);
+        redisCacheUtils.deleteObject(RedisConstants.REDIS_USERID + id);
     }
 
 
     @Override
     public UserVO getUserInfo(Long id) {
-        SysUser sysUser = this.getUserById(id);
+        SysUser sysUser = redisCacheUtils.getCacheObject(RedisConstants.REDIS_USERID + id);
+        if (StringUtils.isNull(sysUser)) {
+            sysUser = this.getUserById(id);
+            //将用户信息存入缓存8小时
+            redisCacheUtils.setCacheObject(RedisConstants.REDIS_USERID + id, sysUser, 8, TimeUnit.MINUTES);
+        }
         UserVO vo = ConvertUtils.sourceToTarget(sysUser, UserVO.class);
         return vo;
     }
@@ -114,13 +120,13 @@ public class SysUserServiceImpl extends ServiceImpl<UserDao, SysUser> implements
     @Override
     public SysUser getUserById(Long id) {
         //从缓存中获取用户信息
-        SysUser sysUser = redisCacheUtils.getCacheObject(Constants.REDIS_USERID + id);
+        SysUser sysUser = redisCacheUtils.getCacheObject(RedisConstants.REDIS_USERID + id);
         if (StringUtils.isNull(sysUser)) {
             //从数据库中获取用户信息
             sysUser = baseMapper.selectById(id);
             AssertUtils.isNull(sysUser, ErrorCode.PARAMS_ERROR, "用户不存在");
             //将用户信息存入缓存8小时
-            redisCacheUtils.setCacheObject(Constants.REDIS_USERID + id, sysUser, 8, TimeUnit.MINUTES);
+            redisCacheUtils.setCacheObject(RedisConstants.REDIS_USERID + id, sysUser, 8, TimeUnit.MINUTES);
         }
         return sysUser;
     }
@@ -134,7 +140,7 @@ public class SysUserServiceImpl extends ServiceImpl<UserDao, SysUser> implements
         Long id = Long.valueOf(loginIdDefaultNull.toString());
         //验证用户信息
         //从缓存中获取用户信息
-        SysUser sysUser = redisCacheUtils.getCacheObject(Constants.REDIS_USERID + id);
+        SysUser sysUser = redisCacheUtils.getCacheObject(RedisConstants.REDIS_USERID + id);
         if (StringUtils.isNull(sysUser)) {
             //从数据库中获取用户信息
             sysUser = baseMapper.selectById(id);
@@ -221,6 +227,7 @@ public class SysUserServiceImpl extends ServiceImpl<UserDao, SysUser> implements
      * @param id
      */
     @Async
+    @Override
     public void updateUserLoginDate(Long id) {
         try {
             // 从 RequestContextHolder 中获取 ServletRequestAttributes
@@ -249,7 +256,7 @@ public class SysUserServiceImpl extends ServiceImpl<UserDao, SysUser> implements
             if (i > 0) {
                 sysUser = baseMapper.selectById(id);
                 //将用户信息存入缓存8小时
-                redisCacheUtils.setCacheObject(Constants.REDIS_USERID + id, sysUser, 8, TimeUnit.MINUTES);
+                redisCacheUtils.setCacheObject(RedisConstants.REDIS_USERID + id, sysUser, 8, TimeUnit.MINUTES);
             }
         } catch (Exception e) {
             log.error("更新用户登录时间IP失败", e);

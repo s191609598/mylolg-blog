@@ -31,6 +31,10 @@ public class SysFile implements Serializable {
      * 文件名称
      */
     private String fileName;
+    /**
+     * 原始文件名称
+     */
+    private String oFileName;
 
     /**
      * 文件大小
@@ -41,7 +45,23 @@ public class SysFile implements Serializable {
      * 文件类型
      */
     private String fileType;
-
+    /**
+     * 存储平台
+     */
+    private String platform;
+    /**
+     *
+     * 存储平台前缀URL
+     */
+    private String platformUrl;
+    /**
+     * basePath
+     */
+    private String basePath;
+    /**
+     * 代理后的URL（云服务没有）
+     */
+    private String proxyUrl;
     /**
      * 文件排序
      */
@@ -56,6 +76,7 @@ public class SysFile implements Serializable {
      * 创建人ID
      */
     private Long createBy;
+
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

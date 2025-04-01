@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mylog.common.constant.Constants;
+import com.mylog.common.constant.RedisConstants;
 import com.mylog.common.utils.ConvertUtils;
 import com.mylog.common.utils.StringUtils;
 import com.mylog.common.utils.resultutils.ErrorCode;
@@ -50,7 +51,7 @@ public class SysTagServiceImpl extends ServiceImpl<SysTagDao, SysTag> implements
     SysArticleTagDao sysArticleTagDao;
 
     /**
-     * 根据标签名称获取标签对象  TODO  可以缓存起来  用map结构
+     * 根据标签名称获取标签对象
      *
      * @param names
      * @return
@@ -68,7 +69,10 @@ public class SysTagServiceImpl extends ServiceImpl<SysTagDao, SysTag> implements
                 if (StringUtils.isNull(sysTag)) {
                     sysTag = new SysTag();
                     sysTag.setName(name);
-                    int sort = baseMapper.getSort();
+                    Integer sort = baseMapper.getSort();
+                    if (StringUtils.isNull(sort)) {
+                        sort = 0;
+                    }
                     sysTag.setSort(sort + 1);
                     boolean save = this.save(sysTag);
                     AssertUtils.assertIf(!save, ErrorCode.OPERATION_ERROR);
@@ -77,7 +81,7 @@ public class SysTagServiceImpl extends ServiceImpl<SysTagDao, SysTag> implements
                 tagList.add(sysTag);
             }
             if (n.get() >= 1) {
-                redisCacheUtils.deleteObject(Constants.REDIS_TAG);
+                redisCacheUtils.deleteObject(RedisConstants.REDIS_TAG);
             }
         }
         return tagList;
@@ -96,7 +100,7 @@ public class SysTagServiceImpl extends ServiceImpl<SysTagDao, SysTag> implements
     @Override
     public List<HomeTagVO> queryHomeTagAll() {
         List<HomeTagVO> homeTagVOS = null;
-        homeTagVOS = redisCacheUtils.getCacheObject(Constants.REDIS_TAG);
+        homeTagVOS = redisCacheUtils.getCacheObject(RedisConstants.REDIS_TAG);
         if (StringUtils.isEmpty(homeTagVOS)) {
             List<TagNumVO> tagNum = sysArticleTagDao.getTagNum();
             homeTagVOS = this.queryTagVoAll();
@@ -104,8 +108,8 @@ public class SysTagServiceImpl extends ServiceImpl<SysTagDao, SysTag> implements
             tagNum.forEach(i -> map.put(i.getTagId(), i.getNum()));
             homeTagVOS.forEach(i -> i.setNum(map.getOrDefault(i.getId(), 0)));
             //排序 根据数量降序  再根据排序升序
-            homeTagVOS =  homeTagVOS.stream().sorted(Comparator.comparing(HomeTagVO::getNum).reversed().thenComparing(HomeTagVO::getSort)).collect(Collectors.toList());
-            redisCacheUtils.setCacheObject(Constants.REDIS_TAG, homeTagVOS, 60 * 60 * 24, TimeUnit.SECONDS);
+            homeTagVOS = homeTagVOS.stream().sorted(Comparator.comparing(HomeTagVO::getNum).reversed().thenComparing(HomeTagVO::getSort)).collect(Collectors.toList());
+            redisCacheUtils.setCacheObject(RedisConstants.REDIS_TAG, homeTagVOS, 60 * 60 * 24, TimeUnit.SECONDS);
         }
         return homeTagVOS;
     }
@@ -145,12 +149,15 @@ public class SysTagServiceImpl extends ServiceImpl<SysTagDao, SysTag> implements
         sysTag.setCreateTime(new Date());
         sysTag.setUpdateTime(new Date());
         if (StringUtils.isNull(sysTag.getSort())) {
-            int sort = baseMapper.getSort();
+            Integer sort = baseMapper.getSort();
+            if (StringUtils.isNull(sort)) {
+                sort = 0;
+            }
             sysTag.setSort(sort + 1);
         }
         boolean save = this.save(sysTag);
         if (save) {
-            redisCacheUtils.deleteObject(Constants.REDIS_TAG);
+            redisCacheUtils.deleteObject(RedisConstants.REDIS_TAG);
         }
     }
 
@@ -168,7 +175,7 @@ public class SysTagServiceImpl extends ServiceImpl<SysTagDao, SysTag> implements
         sysTag.setUpdateTime(new Date());
         boolean b = this.updateById(sysTag);
         if (b) {
-            redisCacheUtils.deleteObject(Constants.REDIS_TAG);
+            redisCacheUtils.deleteObject(RedisConstants.REDIS_TAG);
         }
     }
 
@@ -179,7 +186,7 @@ public class SysTagServiceImpl extends ServiceImpl<SysTagDao, SysTag> implements
         AssertUtils.assertIf(StringUtils.isNotEmpty(list), "该标签已关联文章，无法删除，请先解除关联");
         boolean b = this.removeById(id);
         if (b) {
-            redisCacheUtils.deleteObject(Constants.REDIS_TAG);
+            redisCacheUtils.deleteObject(RedisConstants.REDIS_TAG);
         }
     }
 

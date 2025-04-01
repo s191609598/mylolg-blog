@@ -30,7 +30,7 @@
     "@tsconfig/node22": "^22.0.0",
     "@types/js-cookie": "^3.0.6",
     "@types/lodash": "^4.17.16",
-    "@types/node": "^22.13.1",
+    "@types/node": "^22.13.14",
     "@umijs/openapi": "^1.13.0",
     "@vitejs/plugin-vue": "^5.2.1",
     "@vue/eslint-config-prettier": "^10.1.0",

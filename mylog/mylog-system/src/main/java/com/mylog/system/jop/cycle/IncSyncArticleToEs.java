@@ -36,7 +36,7 @@ public class IncSyncArticleToEs {
     public void run() {
         // 查询近 5 分钟内的数据
         Date fiveMinutesAgoDate = new Date(new Date().getTime() - 5 * 60 * 1000L);
-        List<ArticleEsDTO> list = sysArticleService.listArticleWithDelete(fiveMinutesAgoDate);
+        List<ArticleEsDTO> list = sysArticleService.listSyncArticle(fiveMinutesAgoDate);
         if (StringUtils.isEmpty(list)) {
             log.info("no inc Article");
             return;

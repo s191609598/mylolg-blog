@@ -17,7 +17,7 @@
         createTime,updateTime
     </sql>
 
-    <select id="getSort" resultType="int">
+    <select id="getSort" resultType="integer">
         select max(sort) from sys_tag
     </select>
 </mapper>

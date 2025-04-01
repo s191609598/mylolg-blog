@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -104,9 +105,6 @@ public class MinIOUtil {
      */
     public String upload(MultipartFile file) {
         String originalFilename = file.getOriginalFilename();
-
-        System.out.println("文件名称：" + originalFilename);
-
         if (!StringUtils.hasText(originalFilename)) {
             throw new MyException();
         }
@@ -122,11 +120,6 @@ public class MinIOUtil {
             if (!b) {
                 this.makeBucket(minioConfig.getBucketName());
             }
-//            if (file.getSize() > 1024 * 1024 * 1024) {
-//            if (file.getSize() > 1024 * 1024 * 30) {
-////                throw new MyException("文件大小不能超过 1024 * 1024 * 1024 B");
-//                throw new MyException("文件大小不能超过 30 MB");
-//            }
             PutObjectArgs objectArgs = PutObjectArgs.builder().bucket(minioConfig.getBucketName()).object(objectName).stream(file.getInputStream(), file.getSize(), -1).contentType(file.getContentType()).build();
             // 文件名称相同会覆盖
             minioClient.putObject(objectArgs);
@@ -135,6 +128,39 @@ public class MinIOUtil {
             return null;
         }
         return objectName;
+    }
+
+    /**
+     * 字节数组文件上传
+     * @param bytes 文件字节数组
+     * @param fileName 原始文件名（用于获取后缀）
+     * @param contentType 文件类型（如：image/jpeg）
+     * @return 文件对象名称
+     */
+    public String upload(byte[] bytes, String fileName, String contentType) {
+        // 生成带路径的文件名
+        String prefix = new SimpleDateFormat("yyyy/MM/dd").format(new Date());
+        String suffix = fileName.contains(".") ? fileName.substring(fileName.lastIndexOf(".")) : "";
+        String objectName = prefix + "/" + UUID.randomUUID().toString(true) + suffix;
+
+        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes)) {
+            // 确保存储桶存在
+            if (!this.bucketExists(minioConfig.getBucketName())) {
+                this.makeBucket(minioConfig.getBucketName());
+            }
+            // 构建上传参数
+            PutObjectArgs objectArgs = PutObjectArgs.builder()
+                    .bucket(minioConfig.getBucketName())
+                    .object(objectName)
+                    .stream(inputStream, bytes.length, -1)
+                    .contentType(contentType)
+                    .build();
+            minioClient.putObject(objectArgs);
+            return objectName;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /**

@@ -18,7 +18,7 @@ import com.mylog.common.utils.resultutils.ErrorCode;
 import com.mylog.common.utils.resultutils.R;
 import com.mylog.framework.async.AsyncDao;
 import com.mylog.framework.async.AsyncFactory;
-import com.mylog.system.entity.SysLogError;
+import com.mylog.system.entity.SysErrorLog;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -51,7 +51,7 @@ public class GlobalExceptionHandler {
         String requestURI = request.getRequestURI();
         log.error("请求地址'{}',发生未知异常'{}'", requestURI, e.getMessage());
 //        e.printStackTrace();
-        return R.error(e.getCode(),e.getMsg());
+        return R.error(e.getCode(), e.getMsg());
     }
 
     /**
@@ -78,7 +78,7 @@ public class GlobalExceptionHandler {
     private void saveLog(Integer errorType, HttpServletRequest request, Exception e) {
         String requestURI = request.getRequestURI();
         String method = request.getMethod();
-        SysLogError errorLog = new SysLogError();
+        SysErrorLog errorLog = new SysErrorLog();
         errorLog.setRequestUri(requestURI);
         errorLog.setRequestMethod(method);
         Object loginIdDefaultNull = StpUtil.getLoginIdDefaultNull();

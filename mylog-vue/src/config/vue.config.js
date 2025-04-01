@@ -1,11 +1,11 @@
-// const path = require('path');
-//
 // module.exports = {
-//   chainWebpack: config => {
-//     config.resolve.alias
-//       .set('@img', path.resolve(__dirname, 'src/assets/images'))
+//   devServer: {
+//     proxy: {
+//       '/api': {
+//         target: 'http://localhost:7333',
+//         changeOrigin: true,
+//         pathRewrite: { '^/api': '' }
+//       }
+//     }
 //   }
-// }
-module.exports = {
-  publicPath: '/mylog/'
-}
+// };

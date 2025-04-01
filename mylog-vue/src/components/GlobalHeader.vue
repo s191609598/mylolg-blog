@@ -21,17 +21,24 @@
           <div v-if="loginUserStore.loginUser.id">
             <a-dropdown>
               <a-space>
-                <a-avatar :src="loginUserStore.loginUser.userAvatar" />
+                <a-avatar
+                  :src="loginUserStore.loginUser.userAvatar"
+                  :style="loginUserStore.loginUser.userAvatar ? {} : { backgroundColor: '#1890ff' }"
+                >
+                  <template v-if="!loginUserStore.loginUser.userAvatar">
+                    {{ (loginUserStore.loginUser.userName || '匿名').slice(0, 1) }}
+                  </template>
+                </a-avatar>
                 <span class="username">{{ loginUserStore.loginUser.userName ?? '匿名' }}</span>
               </a-space>
               <template #overlay>
                 <a-menu>
-                  <a-menu-item>
-                    <router-link to="/my_space">
-                      <UserOutlined />
-                      个人中心
-                    </router-link>
-                  </a-menu-item>
+<!--                  <a-menu-item>-->
+<!--                    <router-link to="/my_space">-->
+<!--                      <UserOutlined />-->
+<!--                      个人中心-->
+<!--                    </router-link>-->
+<!--                  </a-menu-item>-->
                   <a-menu-item @click="doLogout">
                     <LogoutOutlined />
                     退出登录

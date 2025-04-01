@@ -1,91 +1,93 @@
 <!--首页-文章详情-->
 <template>
   <div id="articleDetailsPage">
-    <a-row>
-      <!--      左边-->
-      <a-col :span="3">
-        <!--        左边的悬浮按钮-->
-        <div id="articleFloatButton">
-          <a-float-button-group shape="circle">
-            <a-float-button :badge="{ count: article.upNum, overflowCount: 999 }">
-              <template #icon>
-                <LikeOutlined />
-              </template>
-            </a-float-button>
-            <a-float-button
-              :badge="{ count: article.commentNum, overflowCount: 999 }"
-              @click="scrollToCommentBox"
-            >
-              <template #icon>
-                <CommentOutlined />
-              </template>
-            </a-float-button>
-            <a-float-button :badge="{ count: article.collectNum, overflowCount: 999 }">
-              <template #icon>
-                <StarOutlined />
-              </template>
-            </a-float-button>
-          </a-float-button-group>
-        </div>
-      </a-col>
-      <!--      中间-->
-      <a-col :span="18">
-        <a-card style="width: 100%; height: 100%">
-          <div id="articleTtele">
-            <a-typography-title>{{ article.title }}</a-typography-title>
-            <a-divider />
+    <!-- 添加全局加载提示 -->
+    <a-spin :spinning="loading" tip="加载中..." size="large" class="global-spin">
+      <a-row>
+        <!-- 左边 -->
+        <a-col :span="3">
+          <!-- 左边的悬浮按钮 -->
+          <div id="articleFloatButton">
+            <a-float-button-group shape="circle">
+              <a-float-button :badge="{ count: article.upNum, overflowCount: 999 }">
+                <template #icon>
+                  <LikeOutlined />
+                </template>
+              </a-float-button>
+              <a-float-button
+                :badge="{ count: article.commentNum, overflowCount: 999 }"
+                @click="scrollToCommentBox"
+              >
+                <template #icon>
+                  <CommentOutlined />
+                </template>
+              </a-float-button>
+              <a-float-button :badge="{ count: article.collectNum, overflowCount: 999 }">
+                <template #icon>
+                  <StarOutlined />
+                </template>
+              </a-float-button>
+            </a-float-button-group>
           </div>
-          <div id="articleContent">
-            <MdPreview :modelValue="article.content" :id="state.id" />
-            <a-divider id="comment-box" />
-          </div>
-          <div id="articleComment">
-            <div>
-              <a-textarea v-model:value="value" placeholder="评论" :rows="4" />
-              <a-flex gap="middle" align="start" vertical>
-                <a-flex :style="{ ...boxStyle }" justify="flex-end" align="0">
-                  <a-button
-                    type="primary"
-                    @click="handleSubmit({ articleId: article.id, content: value })"
+        </a-col>
+        <!-- 中间 -->
+        <a-col :span="18">
+          <a-card style="width: 100%; height: 100%">
+            <div id="articleTtele">
+              <a-typography-title>{{ article.title }}</a-typography-title>
+              <a-divider />
+            </div>
+            <div id="articleContent">
+              <MdPreview :modelValue="article.content" :id="state.id" />
+              <a-divider id="comment-box" />
+            </div>
+            <div id="articleComment">
+              <div>
+                <a-textarea v-model:value="value" placeholder="评论" :rows="4" />
+                <a-flex gap="middle" align="start" vertical>
+                  <a-flex :style="{ ...boxStyle }" justify="flex-end" align="0">
+                    <a-button
+                      type="primary"
+                      @click="handleSubmit({ articleId: article.id, content: value })"
                     >提交评论
-                  </a-button>
+                    </a-button>
+                  </a-flex>
                 </a-flex>
-              </a-flex>
-            </div>
-            <a-divider />
-            <div>全部评论（{{ article.commentNum }}）</div>
-            <CommentTreeModal
-              :comments="comments"
-              :handleSubmit="handleSubmit"
-              :articleId="parseInt(articleId)"
-            />
-            <div class="pagination-container">
-              <a-pagination
-                v-model:current="searchParams.pageNo"
-                :total="total"
-                v-model:page-size="searchParams.pageSize"
-                :showSizeChanger="false"
-                @change="onChange"
-                style="textalign: 'center'; margintop: '26px'"
+              </div>
+              <a-divider />
+              <div>全部评论（{{ article.commentNum }}）</div>
+              <CommentTreeModal
+                :comments="comments"
+                :handleSubmit="handleSubmit"
+                :articleId="parseInt(articleId)"
               />
+              <div class="pagination-container">
+                <a-pagination
+                  v-model:current="searchParams.pageNo"
+                  :total="total"
+                  v-model:page-size="searchParams.pageSize"
+                  :showSizeChanger="false"
+                  @change="onChange"                  style="textalign: 'center'; margintop: '26px'"
+                />
+              </div>
             </div>
+          </a-card>
+        </a-col>
+        <!-- 右边 -->
+        <a-col :span="3">
+          <!-- 目录 -->
+          <a-affix :offset-top="top">
+            <MdCatalog :editorId="state.id" :scrollElement="scrollElement" />
+          </a-affix>
+          <!-- 悬浮按钮 -->
+          <div>
+            <a-float-button-group shape="circle" :style="{ right: '34px', bottom: '120px' }">
+              <a-back-top :visibility-height="1" />
+            </a-float-button-group>
           </div>
-        </a-card>
-      </a-col>
-      <!--      右边-->
-      <a-col :span="3">
-        <!--        目录-->
-        <a-affix :offset-top="top">
-          <MdCatalog :editorId="state.id" :scrollElement="scrollElement" />
-        </a-affix>
-        <!--        悬浮按钮-->
-        <div>
-          <a-float-button-group shape="circle" :style="{ right: '34px', bottom: '120px' }">
-            <a-back-top :visibility-height="1" />
-          </a-float-button-group>
-        </div>
-      </a-col>
-    </a-row>
+        </a-col>
+      </a-row>
+    </a-spin>
   </div>
 </template>
 <script setup lang="ts">
@@ -108,6 +110,9 @@ import {
   submitCommentUsingPost,
 } from '@/api/homeController.ts'
 
+
+//loading 状态
+const loading = ref(true)
 // 获取路由参数
 const route = useRoute()
 const articleId = route.params.id as string
@@ -157,29 +162,39 @@ const comments = ref<API.CommentsTreeVO[]>([])
 
 // 查询文章详情
 const fetchArticleDetails = async () => {
-  const res = await getHomeArticleByIdUsingGet({ id: parseInt(articleId) })
-  if (res.data.code === 0 && res.data.data) {
-    article.value = {
-      ...res.data.data,
-      actions: [
-        { icon: EyeOutlined, text: res.data.data.readNum },
-        { icon: LikeOutlined, text: res.data.data.upNum },
-        { icon: MessageOutlined, text: res.data.data.commentNum },
-      ],
+  try {
+    const res = await getHomeArticleByIdUsingGet({ id: parseInt(articleId) })
+    if (res.data.code === 0 && res.data.data) {
+      article.value = {
+        ...res.data.data,
+        actions: [
+          { icon: EyeOutlined, text: res.data.data.readNum },
+          { icon: LikeOutlined, text: res.data.data.upNum },
+          { icon: MessageOutlined, text: res.data.data.commentNum },
+        ],
+      }
+      await fetchArticleComments()
+    } else {
+      message.error('获取文章详情失败！' + res.data.msg)
     }
-    await fetchArticleComments()
-  } else {
-    message.error('获取文章详情失败！' + res.data.msg)
+  } catch (error) {
+    console.error('加载文章详情失败', error)
+  } finally {
+    loading.value = false // 加载完成
   }
 }
 //获取文章评论
 const fetchArticleComments = async () => {
-  const res = await queryCommentByArticleIdUsingPost(searchParams)
-  if (res.data.code === 0 && res.data.data) {
-    comments.value = res.data.data.records
-    total.value = res.data.data.total
-    searchParams.pageNo = res.data.data.current
-    searchParams.pageSize = res.data.data.size
+  try {
+    const res = await queryCommentByArticleIdUsingPost(searchParams)
+    if (res.data.code === 0 && res.data.data) {
+      comments.value = res.data.data.records
+      total.value = res.data.data.total
+      searchParams.pageNo = res.data.data.current
+      searchParams.pageSize = res.data.data.size
+    }
+  } catch (error) {
+    console.error('加载评论失败', error)
   }
 }
 
@@ -291,5 +306,14 @@ watch(
   display: flex;
   justify-content: center;
   margin-top: 26px; /* 调整与上方内容的距离 */
+}
+
+.global-spin {
+  width: 100%;
+  min-height: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 </style>

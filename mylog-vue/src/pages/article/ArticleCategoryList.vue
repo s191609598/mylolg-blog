@@ -7,18 +7,25 @@
           <a-layout-header class="header">
             <div class="scroll-container">
               <div class="buttons-wrapper">
-                <a-button
-                  v-for="(item, index) in ListData"
-                  :key="index"
+                <a-segmented
+                  v-model:value="vo.id"
+                  :options="
+                    ListData.map((item) => ({
+                      label: item.name,
+                      value: item.id,
+                    }))
+                  "
                   size="large"
-                  type="primary"
-                  ghost
-                  :icon="h(FolderOpenOutlined)"
-                  :class="{ 'active-btn': vo?.id === item.id }"
-                  @click="getCategory(item)"
-                >
-                  {{ item.name }}
-                </a-button>
+                  @change="handleSegmentChange"
+                  style="
+                    border-radius: 8px;
+                    padding: 8px; /* 增加容器内边距 */
+                    width: 100%;
+                    box-shadow: none;
+                    gap: 8px; /* 新增选项间距 */
+                    font-size: 36px;
+                  "
+                />
               </div>
             </div>
           </a-layout-header>
@@ -40,26 +47,26 @@
 <script setup lang="ts">
 import CardModal from '@/pages/home/CardModal.vue'
 import ListModal from '@/pages/home/ListModal.vue'
-import { h, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { getHomeCategoryAllUsingGet } from '@/api/homeController.ts'
-import { FolderOpenOutlined } from '@ant-design/icons-vue'
 
-const vo = ref<API.CategoryVO>()
-
+const vo = ref<API.CategoryVO>({ id: undefined }) // 初始化为包含id属性的对象
+// 新增处理方法
+const handleSegmentChange = (selectedId: number) => {
+  const foundItem = ListData.value.find((item) => item.id === selectedId)
+  if (foundItem) {
+    vo.value = { ...foundItem } // 创建新对象触发响应式更新
+  }
+}
 const ListData = ref<API.CategoryVO[]>([])
 const queryCategoryAll = async () => {
   const res = await getHomeCategoryAllUsingGet()
   if (res.data.code === 0) {
     ListData.value = res.data.data
-    // 默认选中第一个标签
-    vo.value = res.data.data[0]
-    // 主动触发首次查询
-    getCategory(res.data.data[0])
+    vo.value.id = res.data.data[0]?.id // 设置默认选中第一个
   }
 }
-const getCategory = (category: API.CategoryVO) => {
-  vo.value = category
-}
+
 // 生命周期钩子
 onMounted(() => {
   queryCategoryAll()
@@ -79,56 +86,5 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   padding-inline: 6px;
-}
-
-.scroll-container {
-  max-height: 500px; /* 替换原来的 height */
-  min-height: 65px; /* 设置最小高度保持可用性 */
-  overflow-y: auto;
-  padding: 8px;
-  border: 1px solid #f0f0f0;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  height: auto; /* 确保高度自适应 */
-}
-
-.buttons-wrapper {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  justify-content: center; /* 新增居中布局 */
-  padding: 8px 0; /* 添加垂直内边距 */
-}
-.active-btn {
-  background-color: rgba(24, 144, 255, 0.1) !important;
-  border-color: #1890ff !important;
-}
-
-/* 保留原有header样式 */
-.header {
-  background: white;
-  width: 100%;
-  height: 100%;
-  padding-inline: 6px;
-}
-
-@media (max-width: 1600px) {
-  .buttons-wrapper > .ant-btn {
-    flex-basis: calc(20% - 10px); /* 屏幕较小时5个/行 */
-  }
-}
-
-@media (max-width: 1200px) {
-  .buttons-wrapper > .ant-btn {
-    flex-basis: calc(25% - 10px); /* 4个/行 */
-  }
-}
-
-/* 大屏适配 */
-@media (min-width: 1920px) {
-  .buttons-wrapper > .ant-btn {
-    flex-basis: calc(12.5% - 10px); /* 8个/行 */
-    min-width: auto; /* 在大屏解除最小宽度限制 */
-  }
 }
 </style>

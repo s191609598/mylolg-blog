@@ -25,60 +25,6 @@ public class Constants {
      * https请求
      */
     public static final String HTTPS = "https://";
-
-    /**
-     * 防重提交 redis key
-     */
-    public static final String REPEAT_SUBMIT_KEY = "repeat_submit:";
-
-    /**
-     * 用户ID
-     */
-    public static final String REDIS_USERID = "userid:";
-    /**
-     * 文章评论
-     */
-    public static final String REDIS_ARTICLE_COMMENT = "article_comment:";
-    /**
-     * 文章评论索引
-     */
-    public static final String REDIS_ARTICLE_COMMENT_INDEX = "article_comment_index:";
-    /**
-     * 文章评论总数
-     */
-    public static final String REDIS_ARTICLE_COMMENT_TOTAL = "article_comment_total:";
-    /**
-     * 文章评论根评论数量
-     */
-    public static final String REDIS_ARTICLE_COMMENT_ROOT_SIZE = "article_comment_root_size:";
-    /**
-     * 文章
-     */
-    public static final String REDIS_ARTICLE = "article:";
-    /**
-     * 文章轮播图
-     */
-    public static final String REDIS_ARTICLE_CAROUSEL = "article_carousel:";
-    /**
-     * 文章推荐
-     */
-    public static final String REDIS_ARTICLE_RECOMMEND = "article_recommend:";
-    /**
-     * 文章阅读量
-     */
-    public static final String REDIS_ARTICLE_READ_NUM = "article_read_num:";
-    /**
-     * 文章点赞量
-     */
-    public static final String REDIS_ARTICLE_UP_NUM = "article_up_num:";
-    /**
-     * 文章收藏量
-     */
-    public static final String REDIS_ARTICLE_COLLECT_NUM = "article_collect_num:";
-    /**
-     * 标签
-     */
-    public static final String REDIS_TAG = "tag:";
     /**
      * 文章状态 0公开（无需任何条件就可以查看）
      */
@@ -104,35 +50,64 @@ public class Constants {
      */
     public static final String SALT = "mylog";
 
+    /**
+     * 验证码有效期（分钟）
+     */
+    public static final Integer CAPTCHA_EXPIRATION = 5;
+    /**
+     * 间隔时间(ms)，小于此时间视为重复提交
+     */
+    public static final int REPEAT_SUBMIT_INTERVAL = 1000;
+
+    /**
+     * 文件平台 minio
+     */
+    public static final String FILE_PLATFORM_MINIO = "minio";
+    /**
+     * 文件平台 阿里云
+     */
+    public static final String FILE_PLATFORM_ALI = "ali";
+    /**
+     * 文件平台 本地
+     */
+    public static final String FILE_PLATFORM_LOCAL = "local";
+    /**
+     * 文件平台 七牛云
+     */
+    public static final String FILE_PLATFORM_QINIU = "qiniu";
+    /**
+     * 文件平台 腾讯云
+     */
+    public static final String FILE_PLATFORM_TENCENT = "tencent";
+    /**
+     * 代理URL
+     */
+    public static final String PROXY_URL = "";
+    /**
+     * 存储平台前缀URL
+     */
+    public static final String PLATFORM_URL = "http://192.168.124.177:9000/";
+
+    // 目标尺寸配置（示例：1200x630 常见文章封面尺寸）
+    public static final int TARGET_WIDTH = 1009;
+    public static final int TARGET_HEIGHT = 384;
+
+    /**
+     * 系统配置表的key
+     */
+    public static final String MINIO_BUCKETNAME_KEY = "sys.minio.bucketName";
+    /**
+     * 存储方式
+     */
+    public static final String SYS_FILE_PLATFORM_TYPE = "sys.file.platform.type";
+
 //    /**
 //     * 资源映射路径 前缀
 //     */
 //    public static final String RESOURCE_PREFIX = "/profile";
 //
-//    /**
-//     * 验证码 redis key
-//     */
-//    public static final String CAPTCHA_CODE_KEY = "captcha_codes:";
 //
-//    /**
-//     * 限流 redis key
-//     */
-//    public static final String RATE_LIMIT_KEY = "rate_limit:";
-//
-//    /**
-//     * 验证码有效期（分钟）
-//     */
-//    public static final Integer CAPTCHA_EXPIRATION = 2;
-//
-//    /**
-//     * 参数管理 cache key
-//     */
-//    public static final String SYS_CONFIG_KEY = "sys_config:";
-//
-//    /**
-//     * 字典管理 cache key
-//     */
-//    public static final String SYS_DICT_KEY = "sys_dict:";
+
 //
 //    /**
 //     * RMI 远程方法调用

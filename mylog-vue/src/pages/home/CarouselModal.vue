@@ -117,29 +117,4 @@ onMounted(() => {
   justify-content: center;
   align-items: center;
 }
-
-/* 修改图片样式 */
-#imgbox img {
-  width: auto;
-  height: auto;
-  min-width: 100%;
-  min-height: 100%;
-  object-fit: cover;
-  transition: transform 0.5s ease; /* 添加过渡动画 */
-  transform: scale(1); /* 初始缩放值 */
-}
-
-/* 如果需要悬停放大效果 */
-#imgbox:hover img {
-  transform: scale(1.1); /* 等比例放大10% */
-}
-
-/deep/ .el-carousel__item {
-  overflow: hidden;
-}
-
-/deep/ .el-carousel__container {
-  height: 100%;
-  perspective: 1000px; /* 增强3D渲染效果 */
-}
 </style>

@@ -11,7 +11,7 @@
  Target Server Version : 80030 (8.0.30)
  File Encoding         : 65001
 
- Date: 26/03/2025 21:29:26
+ Date: 31/03/2025 15:05:48
 */
 
 SET NAMES utf8mb4;
@@ -46,7 +46,7 @@ CREATE TABLE `sys_article`  (
   `createTime` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updateTime` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 13 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '文章表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 14 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '文章表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for sys_article_tag
@@ -94,46 +94,69 @@ CREATE TABLE `sys_comment`  (
 ) ENGINE = InnoDB AUTO_INCREMENT = 93 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '评论表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
--- Table structure for sys_file
+-- Table structure for sys_config
 -- ----------------------------
-DROP TABLE IF EXISTS `sys_file`;
-CREATE TABLE `sys_file`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `fileUrl` varchar(2000) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '文件URL',
-  `fileName` varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '文件名称',
-  `fileSize` bigint NULL DEFAULT NULL COMMENT '文件大小',
-  `fileType` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '文件类型',
-  `sort` tinyint NULL DEFAULT 0 COMMENT '文件排序',
-  `createTime` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `createBy` bigint NULL DEFAULT NULL COMMENT '创建人ID',
+DROP TABLE IF EXISTS `sys_config`;
+CREATE TABLE `sys_config`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '参数主键',
+  `configName` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '参数名称',
+  `configKey` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '参数键名',
+  `configValue` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '参数键值',
+  `isUse` tinyint(1) NULL DEFAULT 0 COMMENT '是否使用 0否 1是',
+  `createBy` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '创建者',
+  `createTime` datetime NULL DEFAULT NULL COMMENT '创建时间',
+  `updateBy` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '' COMMENT '更新者',
+  `updateTime` datetime NULL DEFAULT NULL COMMENT '更新时间',
+  `remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 62 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '文件表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '系统参数配置表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
--- Table structure for sys_log_error
+-- Table structure for sys_error_log
 -- ----------------------------
-DROP TABLE IF EXISTS `sys_log_error`;
-CREATE TABLE `sys_log_error`  (
+DROP TABLE IF EXISTS `sys_error_log`;
+CREATE TABLE `sys_error_log`  (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
   `requestUri` varchar(2550) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '请求URI',
   `requestMethod` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '请求方式',
   `requestParams` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '请求参数',
   `userAgent` varchar(2550) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '用户代理',
-  `ip` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '操作IP',
+  `ip` varchar(2255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '操作IP',
   `errorInfo` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '异常信息',
-  `businessType` tinyint NULL DEFAULT NULL COMMENT '业务类型（0其它 1新增 2修改 3删除）',
-  `operLocation` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'IP地点',
+  `businessType` tinyint NULL DEFAULT NULL COMMENT '业务类型（0查询 1新增 2修改 3删除 4其他）',
+  `operLocation` varchar(2255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'IP地点',
   `errorType` tinyint NULL DEFAULT NULL COMMENT '异常类型 0=请求方式异常 1=业务异常 2=未知运行时异常 3=系统异常 4=token异常',
   `createDate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `createBy` bigint NULL DEFAULT NULL COMMENT '创建者ID',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1315 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '异常日志' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1490 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '异常日志' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
--- Table structure for sys_log_operation
+-- Table structure for sys_file
 -- ----------------------------
-DROP TABLE IF EXISTS `sys_log_operation`;
-CREATE TABLE `sys_log_operation`  (
+DROP TABLE IF EXISTS `sys_file`;
+CREATE TABLE `sys_file`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `fileUrl` varchar(2000) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '文件完整URL',
+  `fileName` varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '文件名称',
+  `oFileName` varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '原始文件名称',
+  `fileSize` bigint NULL DEFAULT NULL COMMENT '文件大小',
+  `fileType` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '文件类型',
+  `platform` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '存储平台',
+  `platformUrl` varchar(2000) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '存储平台前缀URL',
+  `basePath` varchar(2000) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '基础存储路径',
+  `proxyUrl` varchar(2000) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '代理后的URL（云服务没有）',
+  `sort` tinyint NULL DEFAULT 0 COMMENT '文件排序',
+  `createTime` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `createBy` bigint NULL DEFAULT NULL COMMENT '创建人ID',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 75 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '文件表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for sys_op_log
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_op_log`;
+CREATE TABLE `sys_op_log`  (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
   `operation` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '用户操作',
   `requestUri` varchar(2550) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '请求URI',
@@ -141,15 +164,17 @@ CREATE TABLE `sys_log_operation`  (
   `requestParams` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '请求参数',
   `requestTime` bigint NULL DEFAULT NULL COMMENT '请求时长(毫秒)',
   `userAgent` varchar(2550) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '用户代理',
-  `ip` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '操作IP',
+  `ip` varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '操作IP',
   `status` tinyint NULL DEFAULT NULL COMMENT '状态  0：失败   1：成功',
-  `businessType` tinyint NULL DEFAULT NULL COMMENT '业务类型（0其它 1新增 2修改 3删除）',
-  `operLocation` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'IP地点',
-  `jsonResult` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '返回参数',
+  `businessType` tinyint NULL DEFAULT NULL COMMENT '业务类型（0查询 1新增 2修改 3删除 4其他）',
+  `operLocation` varchar(2550) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'IP地点',
+  `jsonResult` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '返回参数',
   `createBy` bigint NULL DEFAULT NULL COMMENT '创建者ID',
   `createDate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `resultError` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '返回异常信息',
+  `stackTrace` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '异常堆栈信息',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '操作日志' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 876 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '操作日志' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for sys_tag
@@ -194,6 +219,6 @@ CREATE TABLE `sys_user`  (
   `createBy` bigint NULL DEFAULT NULL COMMENT '创建者',
   `updateBy` bigint NULL DEFAULT NULL COMMENT '修改者',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 131 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户信息表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 138 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户信息表' ROW_FORMAT = Dynamic;
 
 SET FOREIGN_KEY_CHECKS = 1;

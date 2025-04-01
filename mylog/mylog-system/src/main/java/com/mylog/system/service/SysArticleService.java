@@ -110,6 +110,11 @@ public interface SysArticleService extends IService<SysArticle> {
      */
     List<SysArticle> queryByCategoryId(Long categoryId);
 
-    List<ArticleEsDTO> listArticleWithDelete(Date minUpdateTime);
+    /**
+     * 增量同步文章到ES
+     * @param minUpdateTime
+     * @return
+     */
+    List<ArticleEsDTO> listSyncArticle(Date minUpdateTime);
 
 }

@@ -2,12 +2,12 @@
 /* eslint-disable */
 import request from '@/request'
 
-/** addCategory POST /mylog/category/addCategory */
+/** addCategory POST /api/category/addCategory */
 export async function addCategoryUsingPost(
   body: API.EditCategoryDTO,
   options?: { [key: string]: any }
 ) {
-  return request<Record<string, any>>('/mylog/category/addCategory', {
+  return request<Record<string, any>>('/api/category/addCategory', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -17,12 +17,12 @@ export async function addCategoryUsingPost(
   })
 }
 
-/** deleteCategoryById POST /mylog/category/deletecategorybyid */
+/** deleteCategoryById POST /api/category/deletecategorybyid */
 export async function deleteCategoryByIdUsingPost(
   body: API.IdDTO,
   options?: { [key: string]: any }
 ) {
-  return request<Record<string, any>>('/mylog/category/deletecategorybyid', {
+  return request<Record<string, any>>('/api/category/deletecategorybyid', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -32,20 +32,20 @@ export async function deleteCategoryByIdUsingPost(
   })
 }
 
-/** getCategoryAll GET /mylog/category/querycategoryall */
+/** getCategoryAll GET /api/category/querycategoryall */
 export async function getCategoryAllUsingGet(options?: { [key: string]: any }) {
-  return request<Record<string, any>>('/mylog/category/querycategoryall', {
+  return request<Record<string, any>>('/api/category/querycategoryall', {
     method: 'GET',
     ...(options || {}),
   })
 }
 
-/** queryCategoryPageList POST /mylog/category/queryCategorypagelist */
+/** queryCategoryPageList POST /api/category/queryCategorypagelist */
 export async function queryCategoryPageListUsingPost(
   body: API.CategoryPageListDTO,
   options?: { [key: string]: any }
 ) {
-  return request<Record<string, any>>('/mylog/category/queryCategorypagelist', {
+  return request<Record<string, any>>('/api/category/queryCategorypagelist', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -55,12 +55,12 @@ export async function queryCategoryPageListUsingPost(
   })
 }
 
-/** updateCategory POST /mylog/category/updateCategory */
+/** updateCategory POST /api/category/updateCategory */
 export async function updateCategoryUsingPost(
   body: API.EditCategoryDTO,
   options?: { [key: string]: any }
 ) {
-  return request<Record<string, any>>('/mylog/category/updateCategory', {
+  return request<Record<string, any>>('/api/category/updateCategory', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

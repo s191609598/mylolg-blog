@@ -24,6 +24,6 @@ public interface SysArticleDao extends BaseMapper<SysArticle> {
     IPage<SearchArticleByKeywordVO> searchArticleByKeyword(@Param("dto") SearchArticleByKeywordDTO dto, @Param("iPage") IPage iPage);
     List<ArticleEsDTO> queryArticleEsAll();
 
-    List<ArticleEsDTO> listArticleWithDelete(Date minUpdateTime);
+    List<ArticleEsDTO> listSyncArticle(Date minUpdateTime);
 
 }

@@ -6,7 +6,9 @@ package com.mylog.framework.satoken;
  */
 
 import cn.dev33.satoken.stp.StpInterface;
+import com.mylog.system.entity.user.SysUser;
 import com.mylog.system.redis.RedisCacheUtils;
+import com.mylog.system.service.SysUserService;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -26,6 +28,9 @@ public class StpInterfaceImpl implements StpInterface {
     @Resource
     RedisCacheUtils redisCacheUtils;
 
+    @Resource
+    SysUserService sysUserService;
+
 
     /**
      * 返回一个账号所拥有的权限码集合
@@ -36,13 +41,15 @@ public class StpInterfaceImpl implements StpInterface {
         System.out.println(loginId.toString());
         System.out.println(loginType);
         // 本 list 仅做模拟，实际项目中要根据具体业务逻辑来查询权限
-        List<String> list = new ArrayList<String>();
-        list.add("101");
-        list.add("user.add");
-        list.add("user.update");
-        list.add("user.get");
+        List<String> list = new ArrayList<>();
+        SysUser userById = sysUserService.getUserById(Long.valueOf(loginId.toString()));
+        list.add(userById.getUserRole());
+//        list.add("101");
+//        list.add("user.add");
+//        list.add("user.update");
+//        list.add("user.get");
         // list.add("user.delete");
-        list.add("art.*");
+//        list.add("art.*");
         return list;
     }
 
@@ -54,9 +61,11 @@ public class StpInterfaceImpl implements StpInterface {
         //todo  获取用户角色 集成redis
 
         // 本 list 仅做模拟，实际项目中要根据具体业务逻辑来查询角色
-        List<String> list = new ArrayList<String>();
-        list.add("admin");
-        list.add("super-admin");
+        List<String> list = new ArrayList<>();
+//        list.add("admin");
+//        list.add("super-admin");
+        SysUser userById = sysUserService.getUserById(Long.valueOf(loginId.toString()));
+        list.add(userById.getUserRole());
         return list;
     }
 

@@ -137,7 +137,7 @@ const router = createRouter({
     {
       path: '/about',
       name: '关于',
-      component: () => import('../views/AboutView.vue'),
+      component: () => import('../pages/AboutView.vue'),
       meta: {
         sort: 9,
       },

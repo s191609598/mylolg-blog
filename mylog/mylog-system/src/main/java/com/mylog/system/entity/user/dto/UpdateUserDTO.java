@@ -13,6 +13,8 @@ import java.io.Serializable;
 public class UpdateUserDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    @NotBlank(message = "用户ID不能为空")
+    private Long id;
     /**
      * 用户昵称
      */

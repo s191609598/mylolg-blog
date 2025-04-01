@@ -1,6 +1,12 @@
 <!--首页-文章列表-->
 <template>
   <div id="listModal">
+    <a-spin
+      :spinning="loading"
+      tip="加载中..."
+      size="large"
+      class="custom-spin"
+    >
     <a-list item-layout="vertical" size="large" :pagination="false" :data-source="listData">
       <template #renderItem="{ item }">
         <a-space direction="vertical">
@@ -63,6 +69,7 @@
       >
       </a-pagination>
     </div>
+    </a-spin>
   </div>
 </template>
 <script lang="ts" setup>
@@ -79,6 +86,9 @@ const props = defineProps<{
   tagId?: number | string
   categoryId?: number | string
 }>()
+
+//loading 状态
+const loading = ref(false)
 
 // 新增路由参数获取逻辑
 const route = useRoute()
@@ -97,22 +107,29 @@ const searchParams = reactive<API.SearchArticleByKeywordDTO>({
 
 // 查询
 const handleSearch = debounce(async () => {
-  const res = await searchFromEsUsingPost({
-    ...searchParams,
-    showTop: route.path === '/' ? true : false,
-  })
-  if (res.data.code === 0 && res.data.data) {
-    listData.value = res.data.data.records.map((record:API.HomeArticleVO) => ({
-      ...record,
-      actions: [
-        { icon: EyeOutlined, text: record.readNum },
-        { icon: LikeOutlined, text: record.upNum },
-        { icon: MessageOutlined, text: record.commentNum },
-      ],
-    }))
-    total.value = res.data.data.total ?? 0
-  } else {
-    message.error('获取数据失败！' + res.data.msg)
+  try {
+    loading.value = true
+    const res = await searchFromEsUsingPost({
+      ...searchParams,
+      showTop: route.path === '/' ? true : false,
+    })
+    if (res.data.code === 0 && res.data.data) {
+      listData.value = res.data.data.records.map((record:API.HomeArticleVO) => ({
+        ...record,
+        actions: [
+          { icon: EyeOutlined, text: record.readNum },
+          { icon: LikeOutlined, text: record.upNum },
+          { icon: MessageOutlined, text: record.commentNum },
+        ],
+      }))
+      total.value = res.data.data.total ?? 0
+    } else {
+      message.error('获取数据失败！' + res.data.msg)
+    }
+  } catch (error) {
+    message.error('请求异常：' + (error as Error).message)
+  } finally {
+    loading.value = false
   }
 }, 300)
 
@@ -187,5 +204,16 @@ const handleCardClick = (id: number) => {
 .card-container {
   width: 100%; /* 继承父容器宽度 */
 }
+.custom-spin {
+  width: 100%;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
+/* 调整原有分页样式 */
+.pageModule {
+  padding: 20px 0;
+}
 </style>

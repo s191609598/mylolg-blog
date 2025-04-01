@@ -400,11 +400,13 @@ public class RedisCacheUtils {
         return redisTemplate.keys(pattern);
     }
 
-    public void incrementValue(String key) {
+    public Long incrementValue(String key) {
         ValueOperations<String, String> valueOps = redisTemplate.opsForValue();
         // 直接加一，适用于存储为整数的场景
-        valueOps.increment(key, 1);
+        return valueOps.increment(key, 1);
     }
+
+
 
     public void incrementStringValue(String key) {
         ValueOperations<String, String> valueOps = redisTemplate.opsForValue();

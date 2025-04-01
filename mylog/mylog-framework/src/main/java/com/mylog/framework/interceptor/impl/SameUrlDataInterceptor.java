@@ -3,13 +3,16 @@ package com.mylog.framework.interceptor.impl;
 import com.alibaba.fastjson2.JSONObject;
 import com.mylog.common.annotation.RepeatSubmit;
 import com.mylog.common.constant.Constants;
+import com.mylog.common.constant.RedisConstants;
 import com.mylog.common.filter.RepeatedlyRequestWrapper;
 import com.mylog.common.utils.StringUtils;
 import com.mylog.common.utils.http.HttpHelper;
+import com.mylog.common.utils.ip.IpUtils;
 import com.mylog.framework.interceptor.RepeatSubmitInterceptor;
 import com.mylog.system.redis.RedisCacheUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
@@ -19,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * 判断请求url和数据是否和上一次相同，
- * 如果和上次相同，则是重复提交表单。 有效时间为10秒内。
+ * 如果和上次相同，则是重复提交表单。 默认有效时间为3秒内。
  *
  * @author pss
  */
@@ -56,14 +59,19 @@ public class SameUrlDataInterceptor extends RepeatSubmitInterceptor {
         // 请求地址（作为存放cache的key值）
         String url = request.getRequestURI();
 
-        // 唯一值（没有消息头则使用请求地址）
+        // 唯一值（没有消息头则使用  IP+UserAgent  再没有就用请求地址）
         String submitKey = request.getHeader(header);
+        String useragent = request.getHeader(HttpHeaders.USER_AGENT);
+        String ip = IpUtils.getIp(request);
+        if (StringUtils.isEmpty(submitKey)) {
+            submitKey = useragent + "-" + ip;
+        }
         if (StringUtils.isEmpty(submitKey)) {
             submitKey = url;
         }
-
+        System.out.println(submitKey);
         // 唯一标识（指定key + 消息头）
-        String cacheRepeatKey = Constants.REPEAT_SUBMIT_KEY + submitKey;
+        String cacheRepeatKey = RedisConstants.REPEAT_SUBMIT_KEY + submitKey;
 
         Object sessionObj = redisCacheUtils.getCacheObject(cacheRepeatKey);
         if (sessionObj != null) {

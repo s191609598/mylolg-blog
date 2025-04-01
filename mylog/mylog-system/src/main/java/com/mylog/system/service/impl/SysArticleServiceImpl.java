@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mylog.common.constant.Constants;
+import com.mylog.common.constant.RedisConstants;
 import com.mylog.common.utils.ConvertUtils;
 import com.mylog.common.utils.StringUtils;
 import com.mylog.common.utils.resultutils.ErrorCode;
@@ -38,10 +39,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -107,7 +105,12 @@ public class SysArticleServiceImpl extends ServiceImpl<SysArticleDao, SysArticle
                 //将标签与文章关联
                 boolean b = sysArticleTagService.saveBatch(tagList, sysArticle.getId());
                 if (b) {
-                    redisCacheUtils.deleteObject(Constants.REDIS_TAG);
+                    Set<String> keys = new HashSet<>();
+                    keys.add(RedisConstants.REDIS_ARTICLE_CAROUSEL);
+                    keys.add(RedisConstants.REDIS_ARTICLE_RECOMMEND);
+                    keys.add(RedisConstants.REDIS_TAG);
+                    keys.add(RedisConstants.REDIS_ARTICLE + dto.getId());
+                    redisCacheUtils.deleteObject(keys);
                 }
             }
         }
@@ -141,13 +144,16 @@ public class SysArticleServiceImpl extends ServiceImpl<SysArticleDao, SysArticle
             if (CollUtil.isNotEmpty(tagList)) {
                 boolean b = sysArticleTagService.saveBatch(tagList, sysArticle.getId());
                 if (b) {
-                    redisCacheUtils.deleteObject(Constants.REDIS_TAG);
+                    redisCacheUtils.deleteObject(RedisConstants.REDIS_TAG);
                 }
             }
         }
-        redisCacheUtils.deleteObject(Constants.REDIS_ARTICLE_CAROUSEL);
-        redisCacheUtils.deleteObject(Constants.REDIS_ARTICLE_RECOMMEND);
-        redisCacheUtils.deleteObject(Constants.REDIS_ARTICLE + dto.getId());
+        Set<String> keys = new HashSet<>();
+        keys.add(RedisConstants.REDIS_ARTICLE_CAROUSEL);
+        keys.add(RedisConstants.REDIS_ARTICLE_RECOMMEND);
+        keys.add(RedisConstants.REDIS_TAG);
+        keys.add(RedisConstants.REDIS_ARTICLE + dto.getId());
+        redisCacheUtils.deleteObject(keys);
         return update;
     }
 
@@ -164,14 +170,10 @@ public class SysArticleServiceImpl extends ServiceImpl<SysArticleDao, SysArticle
         SysArticle byId = this.getById(dto.getId());
         // 判断文章是否存在
         AssertUtils.isNull(byId, ErrorCode.NOT_FOUND_ERROR);
-        // 获取创建文章的用户ID
-        Long createBy = byId.getCreateBy();
         // 获取当前登录用户ID
         Object loginIdDefaultNull = StpUtil.getLoginIdDefaultNull();
         // 判断用户是否登录
         AssertUtils.isNull(loginIdDefaultNull, ErrorCode.NOT_LOGIN_ERROR);
-        // 判断当前用户是否有权限修改文章状态
-        AssertUtils.assertIf(!StringUtils.equals(createBy.toString(), loginIdDefaultNull.toString()), ErrorCode.NO_AUTH_ERROR);
         // 创建新的文章对象
         SysArticle sysArticle = new SysArticle();
         // 设置文章ID
@@ -183,6 +185,14 @@ public class SysArticleServiceImpl extends ServiceImpl<SysArticleDao, SysArticle
         sysArticle.setUpdateTime(new Date());
         // 更新文章信息
         boolean b = this.updateById(sysArticle);
+        if (b) {
+            Set<String> keys = new HashSet<>();
+            keys.add(RedisConstants.REDIS_ARTICLE_CAROUSEL);
+            keys.add(RedisConstants.REDIS_ARTICLE_RECOMMEND);
+            keys.add(RedisConstants.REDIS_TAG);
+            keys.add(RedisConstants.REDIS_ARTICLE + dto.getId());
+            redisCacheUtils.deleteObject(keys);
+        }
         // 返回更新结果
         return b;
     }
@@ -317,21 +327,21 @@ public class SysArticleServiceImpl extends ServiceImpl<SysArticleDao, SysArticle
     @Override
     public HomeArticleVO getHomeArticleById(Long id) {
         HomeArticleVO vo = null;
-        vo = redisCacheUtils.getCacheObject(Constants.REDIS_ARTICLE + id);
+        vo = redisCacheUtils.getCacheObject(RedisConstants.REDIS_ARTICLE + id);
         if (StringUtils.isNull(vo)) {
             ArticleVO byId = this.getArticleById(id);
             AssertUtils.isNull(byId, ErrorCode.NOT_FOUND_ERROR);
             vo = ConvertUtils.sourceToTarget(byId, HomeArticleVO.class);
-            redisCacheUtils.setCacheObject(Constants.REDIS_ARTICLE + id, vo, 60 * 60 * 24, TimeUnit.SECONDS);
+            redisCacheUtils.setCacheObject(RedisConstants.REDIS_ARTICLE + id, vo, 60 * 60 * 24, TimeUnit.SECONDS);
         }
         //获取评论数量
-        Integer total = redisCacheUtils.getCacheObject(Constants.REDIS_ARTICLE_COMMENT_TOTAL + id);
+        Integer total = redisCacheUtils.getCacheObject(RedisConstants.REDIS_ARTICLE_COMMENT_TOTAL + id);
         if (StringUtils.isNotNull(total)) {
             vo.setCommentNum(total);
         } else {
             Integer i = sysCommentService.queryByArticleIdCount(id);
             vo.setCommentNum(i);
-            redisCacheUtils.setCacheObject(Constants.REDIS_ARTICLE_COMMENT_TOTAL + id, i, 60 * 60 * 24, TimeUnit.SECONDS);
+            redisCacheUtils.setCacheObject(RedisConstants.REDIS_ARTICLE_COMMENT_TOTAL + id, i, 60 * 60 * 24, TimeUnit.SECONDS);
             QueryWrapper<SysComment> wq = new QueryWrapper<>();
             wq.eq("articleId", id);
             wq.eq("isStick", 0);
@@ -339,18 +349,18 @@ public class SysArticleServiceImpl extends ServiceImpl<SysArticleDao, SysArticle
             wq.isNull("rootId");
             wq.orderByAsc("createTime");
             Long count = sysCommentService.count(wq);
-            redisCacheUtils.setCacheObject(Constants.REDIS_ARTICLE_COMMENT_ROOT_SIZE + id, Integer.valueOf(count.toString()), 60 * 60 * 24, TimeUnit.SECONDS);
+            redisCacheUtils.setCacheObject(RedisConstants.REDIS_ARTICLE_COMMENT_ROOT_SIZE + id, Integer.valueOf(count.toString()), 60 * 60 * 24, TimeUnit.SECONDS);
         }
 
         Object loginIdDefaultNull = StpUtil.getLoginIdDefaultNull();
         if (StringUtils.isNotNull(loginIdDefaultNull)) {
             //阅读数量
-            Integer readNum = redisCacheUtils.getCacheObject(Constants.REDIS_ARTICLE_READ_NUM + id);
+            Integer readNum = redisCacheUtils.getCacheObject(RedisConstants.REDIS_ARTICLE_READ_NUM + id);
             if (StringUtils.isNull(readNum)) {
                 readNum = vo.getReadNum();
-                redisCacheUtils.setCacheObject(Constants.REDIS_ARTICLE_READ_NUM + id, readNum, 60 * 60 * 24, TimeUnit.SECONDS);
+                redisCacheUtils.setCacheObject(RedisConstants.REDIS_ARTICLE_READ_NUM + id, readNum, 60 * 60 * 24, TimeUnit.SECONDS);
             }
-            redisCacheUtils.incrementValue(Constants.REDIS_ARTICLE_READ_NUM + id);
+            redisCacheUtils.incrementValue(RedisConstants.REDIS_ARTICLE_READ_NUM + id);
         } else {
             //判断文章是否需要登录查看
             if (vo.getState().toString().equals(Constants.ARTICL_STATUS_1.toString())) {
@@ -362,15 +372,16 @@ public class SysArticleServiceImpl extends ServiceImpl<SysArticleDao, SysArticle
 
     @Override
     public List<ArticleCarouselVO> queryArticleCarouselAll() {
-        List<ArticleCarouselVO> voList = redisCacheUtils.getCacheObject(Constants.REDIS_ARTICLE_CAROUSEL);
+        List<ArticleCarouselVO> voList = redisCacheUtils.getCacheObject(RedisConstants.REDIS_ARTICLE_CAROUSEL);
         if (StringUtils.isEmpty(voList)) {
             QueryWrapper<SysArticle> wq = new QueryWrapper<>();
             wq.eq("isCarousel", 1);
+            wq.in("state", Constants.ARTICL_STATUS_0,Constants.ARTICL_STATUS_1);
             wq.orderByAsc("sort");
             List<SysArticle> list = this.list(wq);
             if (StringUtils.isNotEmpty(list)) {
                 voList = ConvertUtils.sourceToTarget(list, ArticleCarouselVO.class);
-                redisCacheUtils.setCacheObject(Constants.REDIS_ARTICLE_CAROUSEL, voList, 60 * 60 * 24, TimeUnit.SECONDS);
+                redisCacheUtils.setCacheObject(RedisConstants.REDIS_ARTICLE_CAROUSEL, voList, 60 * 60 * 24, TimeUnit.SECONDS);
             }
         }
         return voList;
@@ -378,15 +389,16 @@ public class SysArticleServiceImpl extends ServiceImpl<SysArticleDao, SysArticle
 
     @Override
     public List<RecommendArticleVO> queryRecommendArticle() {
-        List<RecommendArticleVO> voList = redisCacheUtils.getCacheObject(Constants.REDIS_ARTICLE_RECOMMEND);
+        List<RecommendArticleVO> voList = redisCacheUtils.getCacheObject(RedisConstants.REDIS_ARTICLE_RECOMMEND);
         if (StringUtils.isEmpty(voList)) {
             QueryWrapper<SysArticle> wq = new QueryWrapper<>();
             wq.eq("isRecommend", 1);
+            wq.in("state", Constants.ARTICL_STATUS_0,Constants.ARTICL_STATUS_1);
             wq.orderByAsc("sort");
             List<SysArticle> list = this.list(wq);
             if (StringUtils.isNotEmpty(list)) {
                 voList = ConvertUtils.sourceToTarget(list, RecommendArticleVO.class);
-                redisCacheUtils.setCacheObject(Constants.REDIS_ARTICLE_RECOMMEND, voList, 60 * 60 * 24, TimeUnit.SECONDS);
+                redisCacheUtils.setCacheObject(RedisConstants.REDIS_ARTICLE_RECOMMEND, voList, 60 * 60 * 24, TimeUnit.SECONDS);
             }
         }
         return voList;
@@ -500,9 +512,14 @@ public class SysArticleServiceImpl extends ServiceImpl<SysArticleDao, SysArticle
         return sysArticles;
     }
 
+    /**
+     * 增量同步文章到ES
+     * @param minUpdateTime
+     * @return
+     */
     @Override
-    public List<ArticleEsDTO> listArticleWithDelete(Date minUpdateTime) {
-        List<ArticleEsDTO> articleEsDTOS = baseMapper.listArticleWithDelete(minUpdateTime);
+    public List<ArticleEsDTO> listSyncArticle(Date minUpdateTime) {
+        List<ArticleEsDTO> articleEsDTOS = baseMapper.listSyncArticle(minUpdateTime);
         if (StringUtils.isNotEmpty(articleEsDTOS)) {
             articleEsDTOS.forEach(i -> {
                 i.setArticleId(i.getId());

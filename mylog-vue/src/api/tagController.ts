@@ -2,9 +2,9 @@
 /* eslint-disable */
 import request from '@/request'
 
-/** addTag POST /mylog/tag/addtag */
+/** addTag POST /api/tag/addtag */
 export async function addTagUsingPost(body: API.EditTagDTO, options?: { [key: string]: any }) {
-  return request<Record<string, any>>('/mylog/tag/addtag', {
+  return request<Record<string, any>>('/api/tag/addtag', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -14,9 +14,9 @@ export async function addTagUsingPost(body: API.EditTagDTO, options?: { [key: st
   })
 }
 
-/** deleteTagById POST /mylog/tag/deletetagbyid */
+/** deleteTagById POST /api/tag/deletetagbyid */
 export async function deleteTagByIdUsingPost(body: API.IdDTO, options?: { [key: string]: any }) {
-  return request<Record<string, any>>('/mylog/tag/deletetagbyid', {
+  return request<Record<string, any>>('/api/tag/deletetagbyid', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -26,20 +26,20 @@ export async function deleteTagByIdUsingPost(body: API.IdDTO, options?: { [key: 
   })
 }
 
-/** queryTagAll GET /mylog/tag/querytagall */
+/** queryTagAll GET /api/tag/querytagall */
 export async function queryTagAllUsingGet(options?: { [key: string]: any }) {
-  return request<Record<string, any>>('/mylog/tag/querytagall', {
+  return request<Record<string, any>>('/api/tag/querytagall', {
     method: 'GET',
     ...(options || {}),
   })
 }
 
-/** queryTagPageList POST /mylog/tag/querytagpagelist */
+/** queryTagPageList POST /api/tag/querytagpagelist */
 export async function queryTagPageListUsingPost(
   body: API.TagPageListDTO,
   options?: { [key: string]: any }
 ) {
-  return request<Record<string, any>>('/mylog/tag/querytagpagelist', {
+  return request<Record<string, any>>('/api/tag/querytagpagelist', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -49,9 +49,9 @@ export async function queryTagPageListUsingPost(
   })
 }
 
-/** updateTag POST /mylog/tag/updatetag */
+/** updateTag POST /api/tag/updatetag */
 export async function updateTagUsingPost(body: API.EditTagDTO, options?: { [key: string]: any }) {
-  return request<Record<string, any>>('/mylog/tag/updatetag', {
+  return request<Record<string, any>>('/api/tag/updatetag', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

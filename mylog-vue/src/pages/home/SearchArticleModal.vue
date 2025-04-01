@@ -12,43 +12,52 @@
       :keyboard="true"
       :style="{ height: '1350px', overflowY: 'auto' }"
     >
-      <a-space direction="vertical" :style="{ width: '100%' }" :size="[0, 1158]">
-        <a-layout>
-          <!--          搜索输入框-->
-          <a-layout-header :style="headerStyle">
-            <a-input-search
-              v-model:value="searchParams.keyword"
-              placeholder="搜索"
-              style="width: 200px"
-              @search="onSearch"
-              size="large"
-              :style="searchStyle"
-              allow-clear
-            />
-          </a-layout-header>
-          <!--          数据列表/标签列表-->
-          <a-layout-content :style="{ ...contentStyle }">
-            <TagListModal v-show="searchArticleList.length <= 0" @update:open="handleOpenChange" />
-            <SearchArticleListModeal
-              :listData="searchArticleList"
-              :keyword="searchParams.keyword"
-              @update:open="handleOpenChange"
-            />
-            <a-divider />
-          </a-layout-content>
-          <!--          底部分页-->
-          <a-layout-footer :style="footerStyle">
-            <a-pagination
-              v-model:current="searchParams.pageNo"
-              v-model:page-size="searchParams.pageSize"
-              :total="total"
-              @change="onChange"
-              :hideOnSinglePage="true"
-              show-less-items
-            />
-          </a-layout-footer>
-        </a-layout>
-      </a-space>
+      <a-spin :spinning="loading" tip="搜索中..." size="large" class="search-spin">
+        <a-space direction="vertical" :style="{ width: '100%' }" :size="[0, 1158]">
+          <a-layout>
+            <!-- 搜索输入框 -->
+            <a-layout-header :style="headerStyle">
+              <a-input-search
+                v-model:value="searchParams.keyword"
+                placeholder="搜索"
+                style="width: 200px"
+                @search="onSearch"
+                size="large"
+                :style="searchStyle"
+                allow-clear
+                :loading="loading"
+              />
+            </a-layout-header>
+
+            <!-- 数据列表/标签列表 -->
+            <a-layout-content :style="{ ...contentStyle }">
+              <TagListModal
+                v-show="searchArticleList.length <= 0"
+                @update:open="handleOpenChange"
+              />
+              <SearchArticleListModeal
+                :listData="searchArticleList"
+                :keyword="searchParams.keyword"
+                @update:open="handleOpenChange"
+              />
+              <a-divider />
+            </a-layout-content>
+
+            <!-- 底部分页 -->
+            <a-layout-footer :style="footerStyle">
+              <a-pagination
+                v-model:current="searchParams.pageNo"
+                v-model:page-size="searchParams.pageSize"
+                :total="total"
+                @change="onChange"
+                :hideOnSinglePage="true"
+                show-less-items
+                :disabled="loading"
+              />
+            </a-layout-footer>
+          </a-layout>
+        </a-space>
+      </a-spin>
     </a-modal>
   </div>
 </template>
@@ -59,8 +68,9 @@ import SearchArticleListModeal from '@/pages/home/SearchArticleListModeal.vue'
 import { searchFromEsUsingPost } from '@/api/homeController.ts'
 import { message } from 'ant-design-vue'
 import { EyeOutlined, LikeOutlined, MessageOutlined } from '@ant-design/icons-vue'
-import { useRouter } from 'vue-router'
 
+//loading 状态
+const loading = ref(false)
 defineProps<{ open: boolean }>()
 const emit = defineEmits(['update:open'])
 
@@ -75,24 +85,33 @@ const searchParams = reactive<API.SearchArticleByKeywordDTO>({
 })
 
 const onSearch = async () => {
-  if (!searchParams.keyword || !searchParams.keyword.trim()) {
+  if (!searchParams.keyword?.trim()) {
     searchArticleList.value = []
     return
   }
-  const res = await searchFromEsUsingPost({ ...searchParams })
-  if (res.data.code === 0 && res.data.data) {
-    searchArticleList.value = res.data.data.records
-    total.value = res.data.data.total ?? 0
-    res.data.data.records.map((record: API.SearchArticleByKeywordVO) => ({
-      ...record,
-      actions: [
-        { icon: EyeOutlined, text: record.readNum },
-        { icon: LikeOutlined, text: record.upNum },
-        { icon: MessageOutlined, text: record.commentNum },
-      ],
-    }))
-  } else {
-    message.error('获取数据失败！' + res.data.msg)
+
+  try {
+    loading.value = true
+    const res = await searchFromEsUsingPost({ ...searchParams })
+    if (res.data.code === 0 && res.data.data) {
+      searchArticleList.value = res.data.data.records.map(
+        (record: API.SearchArticleByKeywordVO) => ({
+          ...record,
+          actions: [
+            { icon: EyeOutlined, text: record.readNum },
+            { icon: LikeOutlined, text: record.upNum },
+            { icon: MessageOutlined, text: record.commentNum },
+          ],
+        }),
+      )
+      total.value = res.data.data.total ?? 0
+    } else {
+      message.error('获取数据失败！' + res.data.msg)
+    }
+  } catch (error) {
+    message.error('搜索失败：' + (error as Error).message)
+  } finally {
+    loading.value = false
   }
 }
 
@@ -110,14 +129,6 @@ const onChange = (pageNumber: number, pageSize: number) => {
   searchParams.pageNo = pageNumber
   searchParams.pageSize = pageSize
   onSearch()
-}
-
-const router = useRouter()
-
-// 修改 TagListModal.vue（或对应的标签列表组件）中的标签点击处理
-const handleTagClick = (tag: API.HomeTagVO) => {
-  router.push('/article/tags') // 跳转到标签列表页路由
-  emit('update:open', false) // 关闭搜索弹窗
 }
 
 const searchStyle: CSSProperties = {
@@ -152,6 +163,22 @@ const footerStyle: CSSProperties = {
 }
 </script>
 <style scoped>
-#searchArticleModal {
+.search-spin {
+  width: 100%;
+  min-height: 600px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 调整内容区域样式 */
+:deep(.ant-layout-content) {
+  min-height: auto !important;
+  line-height: normal !important;
+  padding: 20px 0;
+}
+
+/* 空状态样式 */
+.ant-empty {
+  margin: 50px 0;
 }
 </style>

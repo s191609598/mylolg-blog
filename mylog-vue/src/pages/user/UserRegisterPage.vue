@@ -35,6 +35,31 @@
       >
         <a-input-password v-model:value="formState.checkPassword" placeholder="请输入确认密码" />
       </a-form-item>
+      <a-form-item name="captchaCode">
+        <div style="display: flex; gap: 8px; align-items: center">
+          <div style="flex: 3">
+            <a-input v-model:value="formState.captchaCode" placeholder="请输入验证码" />
+          </div>
+          <div
+            style="
+              flex: 2;
+              height: 32px;
+              background: #f5f5f5;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              cursor: pointer;
+            "
+          >
+            <img
+              :src="captchaImage"
+              style="max-width: 100%; height: 55px; object-fit: contain"
+              v-if="captchaImage"
+            />
+          </div>
+        </div>
+      </a-form-item>
+      <a-form-item name="captchaKey" style="display: none"></a-form-item>
       <a-form-item>
         <a-button type="primary" html-type="submit" style="width: 100%">注册</a-button>
       </a-form-item>
@@ -42,16 +67,42 @@
   </div>
 </template>
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { message } from 'ant-design-vue'
 import router from '@/router'
 import { userRegisterUsingPost } from '@/api/userController.ts'
+import { getCaptchaUsingGet } from '@/api/homeController.ts'
+
+const captchaImage = ref('')
+const loading = ref(false)
 
 const formState = reactive<API.UserRegisterDTO>({
   userAccount: '',
   userPassword: '',
   checkPassword: '',
+  captchaCode: '',
+  captchaKey: '',
 })
+
+// 获取验证码方法
+const getCaptcha = async () => {
+  try {
+    loading.value = true
+    const res = await getCaptchaUsingGet() // 需要创建对应的API接口
+    if (res.data.code === 0) {
+      captchaImage.value = res.data.data.captchaImg
+      formState.captchaKey = res.data.data.captchaKey // 需要存储验证码key
+      // console.log(res.data.data.captchaKey)
+      // console.log(formState.captchaKey)
+    } else {
+      message.error(res.data.msg)
+    }
+  } catch (e) {
+    message.error('获取验证码失败')
+  } finally {
+    loading.value = false
+  }
+}
 
 const validateCheckPassword = (rule: any, value: string) => {
   if (value !== formState.userPassword) {
@@ -75,6 +126,11 @@ const handleSubmit = async (values: any) => {
     message.error(e instanceof Error ? e.message : '请求失败')
   }
 }
+
+// 初始化时获取验证码
+onMounted(() => {
+  getCaptcha()
+})
 </script>
 <style scoped>
 #userRegisterPage {
@@ -86,5 +142,4 @@ const handleSubmit = async (values: any) => {
   text-align: center;
   margin-bottom: 20px;
 }
-
 </style>

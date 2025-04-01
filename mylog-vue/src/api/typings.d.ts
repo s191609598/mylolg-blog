@@ -37,6 +37,11 @@ declare namespace API {
     updateTime?: string
   }
 
+  type CaptchaVO = {
+    captchaImg?: string
+    captchaKey?: string
+  }
+
   type CategoryPageListDTO = {
     id?: number
     name?: string
@@ -74,6 +79,7 @@ declare namespace API {
     categoryId?: number
     content?: string
     cover?: string
+    coverId?: string
     excerpt?: string
     id?: number
     isCarousel?: number
@@ -385,6 +391,7 @@ declare namespace API {
 
   type UpdateUserDTO = {
     email?: string
+    id?: number
     phonenumber?: string
     remark?: string
     sex?: number
@@ -417,6 +424,8 @@ declare namespace API {
   }
 
   type UserRegisterDTO = {
+    captchaCode?: string
+    captchaKey?: string
     checkPassword?: string
     userAccount?: string
     userPassword?: string
