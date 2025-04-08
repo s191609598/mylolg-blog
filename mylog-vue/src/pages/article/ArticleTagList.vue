@@ -1,8 +1,8 @@
 <template>
   <div id="articleTagList">
     <a-row>
-      <a-col :span="4"></a-col>
-      <a-col :span="10">
+      <a-col :xs="0" :sm="4" :md="4"></a-col>
+      <a-col :xs="24" :sm="10" :md="10" >
         <a-layout style="background: white; padding-inline: 8px">
           <a-layout-header class="header">
             <a-card
@@ -23,18 +23,18 @@
               </div>
             </a-card>
           </a-layout-header>
-          <a-layout-content class="content">
+          <a-layout-content class="content" >
             <ListModal :tag-id="vo?.id" />
           </a-layout-content>
           <a-layout-footer class="footer"></a-layout-footer>
         </a-layout>
       </a-col>
-      <a-col :span="6">
+      <a-col  :xs="0" :sm="6" :md="6">
         <div id="rightCard">
           <CardModal />
         </div>
       </a-col>
-      <a-col :span="4"></a-col>
+      <a-col :xs="0" :sm="4" :md="4"></a-col>
     </a-row>
   </div>
 </template>
@@ -133,6 +133,37 @@ watch(
   width: 100%;
   height: 100%;
   padding-inline: 6px;
+  padding-right: 13px;
+  padding-left: 13px;
+}
+@media (max-width: 2000px) {
+  #articleTagList .header {
+    background: white;
+    width: 100%;
+    height: 100%;
+    padding-inline: 6px;
+    padding-right: 13px;
+    padding-left: 13px;
+  }
+}
+
+@media (max-width: 1920px) {
+  #articleTagList .header {
+    background: white;
+    width: 100%;
+    height: 100%;
+    padding-inline: 6px;
+  }
+}
+
+@media (max-width: 768px) {
+  #articleTagList .header {
+    background: white;
+    width: 100%;
+    height: 100%;
+    padding-inline: 6px;
+    padding: 0;
+  }
 }
 
 .tag-grid {

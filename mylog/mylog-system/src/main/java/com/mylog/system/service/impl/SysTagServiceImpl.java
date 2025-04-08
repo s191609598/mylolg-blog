@@ -20,7 +20,7 @@ import com.mylog.system.entity.tag.dto.EditTagDTO;
 import com.mylog.system.entity.tag.dto.TagPageListDTO;
 import com.mylog.system.entity.tag.vo.HomeTagVO;
 import com.mylog.system.entity.tag.vo.TagPageListVO;
-import com.mylog.system.redis.RedisCacheUtils;
+import com.mylog.common.utils.redis.RedisCacheUtils;
 import com.mylog.system.service.SysArticleTagService;
 import com.mylog.system.service.SysTagService;
 import org.springframework.stereotype.Service;

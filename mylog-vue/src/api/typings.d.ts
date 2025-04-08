@@ -66,6 +66,11 @@ declare namespace API {
 
   type CharSequence = true
 
+  type collectArticleUsingGETParams = {
+    /** articleId */
+    articleId?: number
+  }
+
   type CommentHomeDTO = {
     articleId?: number
     content?: string
@@ -153,8 +158,10 @@ declare namespace API {
     editTime?: string
     excerpt?: string
     id?: number
+    isCollect?: boolean
     isRecommend?: number
     isTop?: number
+    isUp?: boolean
     readNum?: number
     reprintUrl?: string
     state?: number
@@ -183,6 +190,14 @@ declare namespace API {
     total?: number
   }
 
+  type IPageQueryMyCollectVO_ = {
+    current?: number
+    pages?: number
+    records?: QueryMyCollectVO[]
+    size?: number
+    total?: number
+  }
+
   type IPageSearchArticleByKeywordVO_ = {
     current?: number
     pages?: number
@@ -205,6 +220,16 @@ declare namespace API {
     records?: TreeLong_[]
     size?: number
     total?: number
+  }
+
+  type noArticleUsingGET1Params = {
+    /** articleId */
+    articleId: number
+  }
+
+  type noArticleUsingGETParams = {
+    /** articleId */
+    articleId?: number
   }
 
   type PageQueryArticleVO_ = {
@@ -279,6 +304,20 @@ declare namespace API {
     pageSize?: number
     sortField?: string
     sortOrder?: string
+  }
+
+  type QueryMyCollectDTO = {
+    pageNo?: number
+    pageSize?: number
+    sortField?: string
+    sortOrder?: string
+    userId?: number
+  }
+
+  type QueryMyCollectVO = {
+    excerpt?: string
+    id?: number
+    title?: string
   }
 
   type QueryUserVO = {
@@ -382,6 +421,11 @@ declare namespace API {
     nameKey?: string
     parentIdKey?: string
     weightKey?: string
+  }
+
+  type upArticleUsingGETParams = {
+    /** articleId */
+    articleId: number
   }
 
   type UpdateArticleStatusDTO = {

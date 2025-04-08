@@ -6,6 +6,7 @@ import com.mylog.system.entity.article.SysArticle;
 import com.mylog.system.entity.article.dto.ArticleEsDTO;
 import com.mylog.system.entity.article.dto.SearchArticleByKeywordDTO;
 import com.mylog.system.entity.article.vo.SearchArticleByKeywordVO;
+import com.mylog.system.entity.home.vo.QueryMyCollectVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -25,5 +26,8 @@ public interface SysArticleDao extends BaseMapper<SysArticle> {
     List<ArticleEsDTO> queryArticleEsAll();
 
     List<ArticleEsDTO> listSyncArticle(Date minUpdateTime);
+
+    IPage<QueryMyCollectVO> queryMyCollect(@Param("userId") Long userId, @Param("iPage") IPage iPage);
+    List<QueryMyCollectVO> queryMyCollectAll(@Param("userId") Long userId);
 
 }

@@ -13,7 +13,6 @@ import java.io.Serializable;
 public class UpdateUserDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    @NotBlank(message = "用户ID不能为空")
     private Long id;
     /**
      * 用户昵称
@@ -44,9 +43,4 @@ public class UpdateUserDTO implements Serializable {
      * 用户性别（0男 1女 2未知）
      */
     private Integer sex;
-    /**
-     * 密码
-     */
-    @NotBlank(message = "密码不能为空")
-    private String userPassword;
 }

@@ -2,14 +2,6 @@
 /* eslint-disable */
 import request from '@/request'
 
-/** debugHeaders GET /api/home/debug */
-export async function debugHeadersUsingGet(options?: { [key: string]: any }) {
-  return request<Record<string, any>>('/api/home/debug', {
-    method: 'GET',
-    ...(options || {}),
-  })
-}
-
 /** getCaptcha GET /api/home/getcaptcha */
 export async function getCaptchaUsingGet(options?: { [key: string]: any }) {
   return request<Record<string, any>>('/api/home/getcaptcha', {
@@ -68,6 +60,21 @@ export async function queryCommentByArticleIdUsingPost(
 export async function queryHomeTagAllUsingGet(options?: { [key: string]: any }) {
   return request<Record<string, any>>('/api/home/queryhometagall', {
     method: 'GET',
+    ...(options || {}),
+  })
+}
+
+/** queryMyCollect POST /api/home/querymycollect */
+export async function queryMyCollectUsingPost(
+  body: API.QueryMyCollectDTO,
+  options?: { [key: string]: any }
+) {
+  return request<Record<string, any>>('/api/home/querymycollect', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
     ...(options || {}),
   })
 }

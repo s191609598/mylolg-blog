@@ -14,7 +14,7 @@
             <a-divider />
             <a-card title="">
               <a-card-grid style="width: 25%; text-align: center; font-size: 30px">
-                <a href="https://gitee.com/pss733/mylog-blog" target="_blank" class="icon-link">
+                <a href="https://github.com/s191609598/mylolg-blog" target="_blank" class="icon-link">
                   <GithubOutlined />
                 </a>
               </a-card-grid>

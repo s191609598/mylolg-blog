@@ -1,21 +1,20 @@
 package com.mylog.system.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
-import java.io.Serializable;
 import java.util.Date;
 
 /**
  * 系统参数配置表
+ *
  * @TableName sys_config
  */
-@TableName(value ="sys_config")
+@TableName(value = "sys_config")
 @Data
-public class SysConfig implements Serializable {
+public class SysConfig {
     /**
      * 参数主键
      */
@@ -66,9 +65,6 @@ public class SysConfig implements Serializable {
      * 备注
      */
     private String remark;
-
-    @TableField(exist = false)
-    private static final long serialVersionUID = 1L;
 
 
 }

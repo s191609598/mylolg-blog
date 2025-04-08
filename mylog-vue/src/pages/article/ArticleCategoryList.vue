@@ -1,8 +1,8 @@
 <template>
   <div id="articleCategoryList">
     <a-row>
-      <a-col :span="4"></a-col>
-      <a-col :span="10">
+      <a-col :xs="0" :sm="4" :md="4"></a-col>
+      <a-col :xs="24" :sm="10" :md="10">
         <a-layout style="background: white; padding-inline: 8px">
           <a-layout-header class="header">
             <div class="scroll-container">
@@ -35,12 +35,12 @@
           <a-layout-footer class="footer"></a-layout-footer>
         </a-layout>
       </a-col>
-      <a-col :span="6">
+      <a-col :xs="0" :sm="6" :md="6">
         <div id="rightCard">
           <CardModal />
         </div>
       </a-col>
-      <a-col :span="4"></a-col>
+      <a-col :xs="0" :sm="4" :md="4"></a-col>
     </a-row>
   </div>
 </template>
@@ -86,5 +86,49 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   padding-inline: 6px;
+}
+
+/* 增加滑动指示效果 */
+.scroll-container {
+  mask-image: linear-gradient(to right, transparent, black 20px calc(100% - 20px), transparent);
+}
+
+@media (max-width: 768px) {
+  .scroll-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    padding-bottom: 8px; /* 留出滚动条空间 */
+  }
+
+  .buttons-wrapper {
+    display: flex;
+    min-width: max-content;
+    gap: 8px;
+    padding: 0 12px;
+  }
+
+  /* 隐藏滚动条 */
+  .scroll-container::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* 调整分段控件样式 */
+  :deep(.ant-segmented) {
+    font-size: 14px !important;
+    padding: 4px !important;
+    gap: 4px !important;
+  }
+
+  :deep(.ant-segmented-item) {
+    flex-shrink: 0;
+    white-space: nowrap;
+    padding: 0 8px !important;
+  }
+
+  :deep(.ant-segmented-item-label) {
+    overflow: visible;
+    text-overflow: unset;
+  }
 }
 </style>

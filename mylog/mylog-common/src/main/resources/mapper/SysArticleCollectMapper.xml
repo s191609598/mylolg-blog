@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mylog.system.dao.SysArticleCollectMapper">
+
+    <resultMap id="BaseResultMap" type="com.mylog.system.entity.SysArticleCollect">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="articleid" column="articleId" jdbcType="BIGINT"/>
+            <result property="createby" column="createBy" jdbcType="BIGINT"/>
+            <result property="createtime" column="createTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,articleId,createBy,
+        createTime
+    </sql>
+</mapper>

@@ -10,6 +10,7 @@ export const useLoginUserStore = defineStore('loginUser', {
       userAvatar: undefined,
       userRole: ACCESS_ENUM.NOT_LOGIN,
       isLoggedIn: false,
+      userProfile: '',
     },
   }),
   actions: {

@@ -11,6 +11,7 @@ import com.mylog.system.entity.article.dto.ArticleEsDTO;
 import com.mylog.system.service.SysArticleService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -22,7 +23,7 @@ import java.util.List;
  * @Version: 1.0
  */
 //TODO 取消注解开启定时任务
-//@Component
+@Component
 @Slf4j
 public class FullSyncArticleToEs implements CommandLineRunner {
 

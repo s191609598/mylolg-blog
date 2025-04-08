@@ -13,6 +13,7 @@ import com.mylog.common.exception.MyException;
 import com.mylog.common.utils.ConvertUtils;
 import com.mylog.common.utils.StringUtils;
 import com.mylog.common.utils.ip.IpUtils;
+import com.mylog.common.utils.redis.RedisCacheUtils;
 import com.mylog.common.utils.resultutils.ErrorCode;
 import com.mylog.common.validator.AssertUtils;
 import com.mylog.system.dao.SysUserDao;
@@ -20,7 +21,6 @@ import com.mylog.system.entity.user.SysUser;
 import com.mylog.system.entity.user.dto.*;
 import com.mylog.system.entity.user.vo.QueryUserVO;
 import com.mylog.system.entity.user.vo.UserVO;
-import com.mylog.system.redis.RedisCacheUtils;
 import com.mylog.system.service.SysUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -134,10 +134,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> impleme
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean updateUser(UpdateUserDTO dto) {
-        //获取当前登录用户
-        Object loginIdDefaultNull = StpUtil.getLoginIdDefaultNull();
-        AssertUtils.isNull(loginIdDefaultNull, "请先登录");
-        Long id = Long.valueOf(loginIdDefaultNull.toString());
+        Long id = dto.getId();
         //验证用户信息
         //从缓存中获取用户信息
         SysUser sysUser = redisCacheUtils.getCacheObject(RedisConstants.REDIS_USERID + id);
@@ -148,10 +145,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> impleme
         }
         //更新数据
         SysUser updateUser = ConvertUtils.sourceToTarget(dto, SysUser.class);
-        if (StringUtils.isNotBlank(dto.getUserPassword())) {
-            updateUser.setUserPassword(getEncryptedPassword(dto.getUserPassword()));
-        }
-        updateUser.setId(id);
         updateUser.setUpdateTime(new Date());
         updateUser.setEditTime(new Date());
         updateUser.setUpdateBy(id);

@@ -152,6 +152,65 @@ watch(
   font-size: 14px;
   color: #999;
 }
+
+/*移动端**/
+@media (max-width: 768px) {
+  /* 标题响应式 */
+  .list-item :deep(.ant-btn) {
+    white-space: normal !important; /* 允许换行 */
+    word-break: break-word !important; /* 长单词换行 */
+    text-align: center !important; /* 保持左对齐 */
+    height: auto !important; /* 自动高度 */
+    min-height: 40px; /* 最小高度保持可点击区域 */
+  }
+
+  /* 保持标题字号和行高 */
+  .list-item :deep(.ant-btn span) {
+    display: inline;
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  /* 保持简介多行省略不变 */
+  .list-item > span {
+    /* 原有样式保持不变 */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.5;
+    max-height: 4.5em;
+  }
+
+  /* 调整元信息间距 */
+  .ant-list-item-meta {
+    margin-bottom: 8px;
+  }
+
+  /* 优化操作栏图标间距 */
+  .ant-list-item-action {
+    margin-top: 8px;
+  }
+
+  /* 保持桌面端hover效果 */
+  .list-item:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+/* 保持原有其他样式不变 */
+.list-container {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.styled-list {
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
 </style>
 
 <style>
@@ -159,6 +218,8 @@ watch(
 .highlight {
   background-color: #69b1ff !important;
   color: #003a8c !important;
+  padding: 0 2px;
+  border-radius: 2px;
 }
 
 .highlight:hover {

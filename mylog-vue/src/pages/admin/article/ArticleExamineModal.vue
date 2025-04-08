@@ -98,14 +98,14 @@ const article = ref<API.ArticleVO>({
 
 // 查询文章详情
 const fetchArticleDetails = async () => {
-  const res = await getHomeArticleByIdUsingGet({ id: props.articleId })
-  if (res.data.code === 0 && res.data.data) {
-    article.value = {
-      ...res.data.data,
-    }
-  } else {
-    message.error('获取文章详情失败！' + res.data.msg)
-  }
+  // const res = await getHomeArticleByIdUsingGet({ id: props.articleId })
+  // if (res.data.code === 0 && res.data.data) {
+  //   article.value = {
+  //     ...res.data.data,
+  //   }
+  // } else {
+  //   message.error('获取文章详情失败！' + res.data.msg)
+  // }
 }
 
 // 监听 articleId 变化

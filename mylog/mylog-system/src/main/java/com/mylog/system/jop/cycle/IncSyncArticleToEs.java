@@ -24,10 +24,10 @@ import java.util.List;
 public class IncSyncArticleToEs {
 
     @Resource
-    private SysArticleService sysArticleService;
+    SysArticleService sysArticleService;
 
     @Resource
-    private ArticleEsDao articleEsDao;
+    ArticleEsDao articleEsDao;
 
     /**
      * 每分钟执行一次

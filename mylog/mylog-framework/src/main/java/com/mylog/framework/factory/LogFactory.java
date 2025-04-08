@@ -29,13 +29,7 @@ public class LogFactory {
         fillCommonSysOpLog(sysOpLog, userId, opLog, joinPoint, requestTime);
         sysOpLog.setStatus(1);
         sysOpLog.setJsonResult(result);
-        sysOpLog.setRequestTime(requestTime);
         sysOpLog.setOperation(opLog.title());
-//        String param = JoinPointUtil.getArgsJsonString(joinPoint);
-//        sysOpLog.setRequestParams(param);
-//        sysOpLog.setBusinessType(opLog.businessType().ordinal());
-//        sysOpLog.setCreateBy(userId);
-//        sysOpLog.setCreateDate(DateTime.now());
     }
 
     /**
@@ -52,13 +46,6 @@ public class LogFactory {
         sysOpLog.setStatus(0);
         sysOpLog.setResultError(exception.getMessage());
         sysOpLog.setStackTrace(Arrays.toString(exception.getStackTrace()));
-//        String param = JoinPointUtil.getArgsJsonString(joinPoint);
-//        sysOpLog.setRequestTime(requestTime);
-//        sysOpLog.setOperation(opLog.title());
-//        sysOpLog.setRequestParams(param);
-//        sysOpLog.setBusinessType(opLog.businessType().ordinal());
-//        sysOpLog.setCreateBy(userId);
-//        sysOpLog.setCreateDate(DateTime.now());
     }
 
 

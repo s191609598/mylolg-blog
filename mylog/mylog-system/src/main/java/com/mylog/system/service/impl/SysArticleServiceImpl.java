@@ -10,6 +10,7 @@ import com.mylog.common.constant.Constants;
 import com.mylog.common.constant.RedisConstants;
 import com.mylog.common.utils.ConvertUtils;
 import com.mylog.common.utils.StringUtils;
+import com.mylog.common.utils.redis.RedisCacheUtils;
 import com.mylog.common.utils.resultutils.ErrorCode;
 import com.mylog.common.validator.AssertUtils;
 import com.mylog.system.dao.SysArticleDao;
@@ -19,9 +20,10 @@ import com.mylog.system.entity.article.dto.*;
 import com.mylog.system.entity.article.vo.*;
 import com.mylog.system.entity.category.SysCategory;
 import com.mylog.system.entity.comment.SysComment;
+import com.mylog.system.entity.home.dto.QueryMyCollectDTO;
+import com.mylog.system.entity.home.vo.QueryMyCollectVO;
 import com.mylog.system.entity.tag.SysTag;
 import com.mylog.system.entity.user.SysUser;
-import com.mylog.system.redis.RedisCacheUtils;
 import com.mylog.system.service.*;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -41,6 +43,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -64,10 +67,15 @@ public class SysArticleServiceImpl extends ServiceImpl<SysArticleDao, SysArticle
     @Resource
     SysCommentService sysCommentService;
     @Resource
-    private ElasticsearchRestTemplate elasticsearchRestTemplate;
+    ElasticsearchRestTemplate elasticsearchRestTemplate;
 
     @Resource
-    private RedisCacheUtils redisCacheUtils;
+    RedisCacheUtils redisCacheUtils;
+
+    @Resource
+    SysArticleUpService sysArticleUpService;
+    @Resource
+    SysArticleCollectService sysArticleCollectService;
 
 
     /**
@@ -334,39 +342,31 @@ public class SysArticleServiceImpl extends ServiceImpl<SysArticleDao, SysArticle
             vo = ConvertUtils.sourceToTarget(byId, HomeArticleVO.class);
             redisCacheUtils.setCacheObject(RedisConstants.REDIS_ARTICLE + id, vo, 60 * 60 * 24, TimeUnit.SECONDS);
         }
-        //获取评论数量
-        Integer total = redisCacheUtils.getCacheObject(RedisConstants.REDIS_ARTICLE_COMMENT_TOTAL + id);
-        if (StringUtils.isNotNull(total)) {
-            vo.setCommentNum(total);
-        } else {
-            Integer i = sysCommentService.queryByArticleIdCount(id);
-            vo.setCommentNum(i);
-            redisCacheUtils.setCacheObject(RedisConstants.REDIS_ARTICLE_COMMENT_TOTAL + id, i, 60 * 60 * 24, TimeUnit.SECONDS);
-            QueryWrapper<SysComment> wq = new QueryWrapper<>();
-            wq.eq("articleId", id);
-            wq.eq("isStick", 0);
-            wq.isNull("pid");
-            wq.isNull("rootId");
-            wq.orderByAsc("createTime");
-            Long count = sysCommentService.count(wq);
-            redisCacheUtils.setCacheObject(RedisConstants.REDIS_ARTICLE_COMMENT_ROOT_SIZE + id, Integer.valueOf(count.toString()), 60 * 60 * 24, TimeUnit.SECONDS);
-        }
-
         Object loginIdDefaultNull = StpUtil.getLoginIdDefaultNull();
+        Long userId = null;
         if (StringUtils.isNotNull(loginIdDefaultNull)) {
-            //阅读数量
-            Integer readNum = redisCacheUtils.getCacheObject(RedisConstants.REDIS_ARTICLE_READ_NUM + id);
-            if (StringUtils.isNull(readNum)) {
-                readNum = vo.getReadNum();
-                redisCacheUtils.setCacheObject(RedisConstants.REDIS_ARTICLE_READ_NUM + id, readNum, 60 * 60 * 24, TimeUnit.SECONDS);
-            }
-            redisCacheUtils.incrementValue(RedisConstants.REDIS_ARTICLE_READ_NUM + id);
+            userId = Long.valueOf(loginIdDefaultNull.toString());
+            //获得是否点赞
+            vo.setIsUp(sysArticleUpService.getIsUp(id, userId));
+            //获得是否收藏
+            vo.setIsCollect(sysArticleCollectService.getIsCollect(id, userId));
         } else {
             //判断文章是否需要登录查看
             if (vo.getState().toString().equals(Constants.ARTICL_STATUS_1.toString())) {
                 vo.setContent(null);
             }
         }
+        //获取评论数量
+        Integer commentNum = this.getCommentNum(id);
+        vo.setCommentNum(commentNum);
+        //阅读数量
+        this.getReadNum(id, true);
+        //获得点赞数量
+        Integer upNum = sysArticleUpService.getUpNum(id);
+        vo.setUpNum(upNum);
+        //获得收藏数量
+        Integer collectNum = sysArticleCollectService.getCollectNum(id);
+        vo.setCollectNum(collectNum);
         return vo;
     }
 
@@ -376,7 +376,7 @@ public class SysArticleServiceImpl extends ServiceImpl<SysArticleDao, SysArticle
         if (StringUtils.isEmpty(voList)) {
             QueryWrapper<SysArticle> wq = new QueryWrapper<>();
             wq.eq("isCarousel", 1);
-            wq.in("state", Constants.ARTICL_STATUS_0,Constants.ARTICL_STATUS_1);
+            wq.in("state", Constants.ARTICL_STATUS_0, Constants.ARTICL_STATUS_1);
             wq.orderByAsc("sort");
             List<SysArticle> list = this.list(wq);
             if (StringUtils.isNotEmpty(list)) {
@@ -393,7 +393,7 @@ public class SysArticleServiceImpl extends ServiceImpl<SysArticleDao, SysArticle
         if (StringUtils.isEmpty(voList)) {
             QueryWrapper<SysArticle> wq = new QueryWrapper<>();
             wq.eq("isRecommend", 1);
-            wq.in("state", Constants.ARTICL_STATUS_0,Constants.ARTICL_STATUS_1);
+            wq.in("state", Constants.ARTICL_STATUS_0, Constants.ARTICL_STATUS_1);
             wq.orderByAsc("sort");
             List<SysArticle> list = this.list(wq);
             if (StringUtils.isNotEmpty(list)) {
@@ -423,9 +423,6 @@ public class SysArticleServiceImpl extends ServiceImpl<SysArticleDao, SysArticle
 
     @Override
     public IPage<SearchArticleByKeywordVO> searchFromEs(SearchArticleByKeywordDTO dto) {
-//        if (StringUtils.isNotBlank(dto.getKeyword()) || StringUtils.isNotNull(dto.getTagId()) || StringUtils.isNotNull(dto.getCategoryId())) {
-//            return null;
-//        }
         String keyword = dto.getKeyword();
         int pageNo = dto.getPageNo() - 1;
         int pageSize = dto.getPageSize();
@@ -467,7 +464,7 @@ public class SysArticleServiceImpl extends ServiceImpl<SysArticleDao, SysArticle
             searchQuery = new NativeSearchQueryBuilder().withQuery(boolQueryBuilder).withPageable(pageRequest).withSorts(sortBuilder).build();
         }
         SearchHits<ArticleEsDTO> searchHits = elasticsearchRestTemplate.search(searchQuery, ArticleEsDTO.class);
-        // 复用 MySQL / MyBatis Plus 的分页对象，封装返回结果
+        // 复用 MyBatis Plus 的分页对象，封装返回结果
         Page<SearchArticleByKeywordVO> page = new Page<>();
         page.setTotal(searchHits.getTotalHits());
         List<SearchArticleByKeywordVO> resourceList = new ArrayList<>();
@@ -477,6 +474,19 @@ public class SysArticleServiceImpl extends ServiceImpl<SysArticleDao, SysArticle
                 SearchArticleByKeywordVO searchArticleByKeywordVO = ConvertUtils.sourceToTarget(questionEsDTOSearchHit.getContent(), SearchArticleByKeywordVO.class);
                 searchArticleByKeywordVO.setContent(null);
                 resourceList.add(searchArticleByKeywordVO);
+                Long id = searchArticleByKeywordVO.getId();
+                //阅读数量
+                Integer readNum = this.getReadNum(id, false);
+                searchArticleByKeywordVO.setReadNum(readNum);
+                //获得点赞数量
+                Integer upNum = sysArticleUpService.getUpNum(id);
+                searchArticleByKeywordVO.setUpNum(upNum);
+                //获得收藏数量
+                Integer collectNum = sysArticleCollectService.getCollectNum(id);
+                searchArticleByKeywordVO.setCollectNum(collectNum);
+                //获得评论数量
+                Integer commentNum = this.getCommentNum(id);
+                searchArticleByKeywordVO.setCommentNum(commentNum);
             }
         }
         page.setRecords(resourceList);
@@ -514,6 +524,7 @@ public class SysArticleServiceImpl extends ServiceImpl<SysArticleDao, SysArticle
 
     /**
      * 增量同步文章到ES
+     *
      * @param minUpdateTime
      * @return
      */
@@ -536,6 +547,100 @@ public class SysArticleServiceImpl extends ServiceImpl<SysArticleDao, SysArticle
             });
         }
         return articleEsDTOS;
+    }
+
+    @Override
+    public IPage<QueryMyCollectVO> queryMyCollect(QueryMyCollectDTO dto) {
+        IPage<QueryMyCollectVO> queryMyCollectVOIPage = null;
+        String redisKey = RedisConstants.USER_COLLECT_KEY + dto.getUserId();
+        boolean exists = redisCacheUtils.exists(redisKey);
+        if (exists) {
+            int pageNo = dto.getPageNo();
+            int pageSize = dto.getPageSize();
+            long start = (pageNo - 1) * pageSize;
+            long end = start + pageSize - 1;
+            Long total = redisCacheUtils.zsetSize(redisKey);
+            long pages = Math.floorDiv(total, pageSize);
+            Set<QueryMyCollectVO> zSet = redisCacheUtils.getZSetByRange(redisKey, start, end);
+//            Boolean isNull = false;
+//            for (QueryMyCollectVO queryMyCollectVO : zSet) {
+//                if (StringUtils.isNull(queryMyCollectVO.getId())) {
+//                    isNull = true;
+//                    break;
+//                }
+//            }
+//
+//            if (total == 1 && isNull) {
+//                queryMyCollectVOIPage.setRecords(Collections.emptyList());
+//            } else {
+//
+//            }
+            queryMyCollectVOIPage = new Page<>();
+            queryMyCollectVOIPage.setRecords(new ArrayList<>(StringUtils.isNotEmpty(zSet) ? zSet : Collections.emptyList()));
+            queryMyCollectVOIPage.setCurrent(pageNo);
+            queryMyCollectVOIPage.setSize(pageSize);
+            queryMyCollectVOIPage.setPages(pages);
+            queryMyCollectVOIPage.setTotal(total);
+        } else {
+            List<QueryMyCollectVO> collectVOList = baseMapper.queryMyCollectAll(dto.getUserId());
+            if (StringUtils.isNotEmpty(collectVOList)) {
+                AtomicInteger atomicInteger = new AtomicInteger(collectVOList.size());
+                collectVOList.forEach(i -> redisCacheUtils.zsetAdd(redisKey, i, atomicInteger.decrementAndGet()));
+                redisCacheUtils.expire(redisKey, 60, TimeUnit.MINUTES);
+            }
+            IPage<QueryMyCollectVO> page = new Page<>(dto.getPageNo(), dto.getPageSize());
+            queryMyCollectVOIPage = baseMapper.queryMyCollect(dto.getUserId(), page);
+        }
+        return queryMyCollectVOIPage;
+    }
+
+    @Override
+    public Integer getReadNum(Long id, Boolean isRecord) {
+        //阅读数量
+        Integer readNum = redisCacheUtils.getCacheObject(RedisConstants.REDIS_ARTICLE_READ_NUM + id);
+        if (StringUtils.isNull(readNum)) {
+            SysArticle sysArticle = this.getById(id);
+            AssertUtils.isNull(sysArticle, ErrorCode.PARAMS_ERROR);
+            if (StringUtils.isNull(sysArticle.getReadNum())) {
+                readNum = 0;
+            } else {
+                readNum = sysArticle.getReadNum();
+            }
+            redisCacheUtils.setCacheObject(RedisConstants.REDIS_ARTICLE_READ_NUM + id, readNum, 60 * 60 * 24, TimeUnit.SECONDS);
+        }
+        //阅读量+1，后续在优化逻辑，暂定为登录的用户阅读就+1
+        if (isRecord) {
+            Object loginIdDefaultNull = StpUtil.getLoginIdDefaultNull();
+            if (StringUtils.isNotNull(loginIdDefaultNull)) {
+                redisCacheUtils.incrementValue(RedisConstants.REDIS_ARTICLE_READ_NUM + id);
+            }
+        }
+        return readNum;
+    }
+
+    @Override
+    public Integer getCommentNum(Long id) {
+        Integer commentNum = redisCacheUtils.getCacheObject(RedisConstants.REDIS_ARTICLE_COMMENT_TOTAL + id);
+        if (StringUtils.isNull(commentNum)) {
+            Integer i = sysCommentService.queryByArticleIdCount(id);
+            if (StringUtils.isNull(i)) {
+                commentNum = 0;
+            } else {
+                commentNum = i;
+            }
+            //缓存评论总数
+            redisCacheUtils.setCacheObject(RedisConstants.REDIS_ARTICLE_COMMENT_TOTAL + id, commentNum, 60 * 60 * 24, TimeUnit.SECONDS);
+            //缓存评论根评论总数
+            QueryWrapper<SysComment> wq = new QueryWrapper<>();
+            wq.eq("articleId", id);
+            wq.eq("isStick", 0);
+            wq.isNull("pid");
+            wq.isNull("rootId");
+            wq.orderByAsc("createTime");
+            Long count = sysCommentService.count(wq);
+            redisCacheUtils.setCacheObject(RedisConstants.REDIS_ARTICLE_COMMENT_ROOT_SIZE + id, Integer.valueOf(count.toString()), 60 * 60 * 24, TimeUnit.SECONDS);
+        }
+        return commentNum;
     }
 
     /**

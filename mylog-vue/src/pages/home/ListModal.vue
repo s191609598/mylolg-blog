@@ -1,75 +1,77 @@
 <!--首页-文章列表-->
 <template>
   <div id="listModal">
-    <a-spin
-      :spinning="loading"
-      tip="加载中..."
-      size="large"
-      class="custom-spin"
-    >
-    <a-list item-layout="vertical" size="large" :pagination="false" :data-source="listData">
-      <template #renderItem="{ item }">
-        <a-space direction="vertical">
-          <a-card
-            id="listCardPage"
-            :bordered="true"
-            :hoverable="true"
-            style="padding: 0px"
-            class="card-container"
-            @click="handleCardClick(item.id)"
-          >
-            <p style="padding: 0px; margin: 0px">
-              <a-list-item key="item.title">
-                <template #extra>
-                  <img
-                    alt="cover"
-                    :src="item.cover"
-                    :onerror="setDefaultImage"
-                    class="cover-image"
-                  />
-                </template>
-                <a-list-item-meta>
-                  <template #title>
-                    <a-tag
-                      color="error"
-                      v-show="route.path === '/' && item.isTop === 1"
-                      style="display: table-cell; vertical-align: middle"
-                    >
-                      <template #icon>
-                        <PushpinOutlined />
-                      </template>
-                      置顶
-                    </a-tag>
-                    <a style="font-size: 22px">{{ item.title }}</a>
+    <a-row>
+      <a-col :xs="0" />
+      <a-col :xs="24" :sm="20" :md="18" :lg="16" :xl="24" >
+        <a-list
+          :loading="loading"
+          item-layout="vertical"
+          size="large"
+          :pagination="false"
+          :data-source="listData"
+        >
+          <template #renderItem="{ item }">
+            <a-space direction="vertical">
+              <a-card
+                id="listCardPage"
+                :bordered="true"
+                :hoverable="true"
+                class="card-container"
+                @click="handleCardClick(item.id)"
+              >
+                <a-list-item>
+                  <template #extra>
+                    <div class="hidden-xs">
+                      <img
+                        alt="cover"
+                        :src="item.cover"
+                        :onerror="setDefaultImage"
+                        class="cover-image"
+                      />
+                    </div>
                   </template>
-                </a-list-item-meta>
-                {{ item.excerpt }}
-                <template #actions>
-                  <span v-for="{ icon, text } in item.actions" :key="icon">
-                    <component :is="icon" style="margin-right: 8px; padding-top: 80px" />
-                    {{ text }}
-                  </span>
-                </template>
-              </a-list-item>
-            </p>
-          </a-card>
-        </a-space>
-      </template>
-    </a-list>
-    <!--    分页-->
-    <a-divider />
-    <div class="pageModule">
-      <a-pagination
-        v-model:current="searchParams.pageNo"
-        v-model:page-size="searchParams.pageSize"
-        :total="total"
-        @change="onChange"
-        :responsive="false"
-        style="textalign: 'center'; margintop: '26px'"
-      >
-      </a-pagination>
-    </div>
-    </a-spin>
+                  <a-list-item-meta>
+                    <template #title>
+                      <div class="title-container">
+                        <a-tag
+                          v-if="route.path === '/' && item.isTop === 1"
+                          color="error"
+                          class="top-tag"
+                        >
+                          <PushpinOutlined />
+                          置顶
+                        </a-tag>
+                        <span class="article-title">{{ item.title }}</span>
+                      </div>
+                    </template>
+                  </a-list-item-meta>
+                  <div class="excerpt">{{ item.excerpt }}</div>
+                  <template #actions>
+                    <span v-for="{ icon, text } in item.actions" :key="icon">
+                      <component :is="icon" class="action-icon" />
+                      {{ text }}
+                    </span>
+                  </template>
+                </a-list-item>
+              </a-card>
+            </a-space>
+          </template>
+        </a-list>
+
+        <a-divider />
+        <div class="pageModule" >
+          <a-pagination
+            v-model:current="searchParams.pageNo"
+            v-model:page-size="searchParams.pageSize"
+            :total="total"
+            @change="onChange"
+            :responsive="true"
+          />
+        </div>
+      </a-col>
+      <a-col :xs="0" />
+    </a-row>
   </div>
 </template>
 <script lang="ts" setup>
@@ -80,7 +82,7 @@ import { message } from 'ant-design-vue'
 import router from '@/router'
 import { useRoute } from 'vue-router'
 import { debounce } from 'lodash-es'
-import imgerror from '@/assets/imgERROR.jpg';
+import imgerror from '@/assets/imgERROR.jpg'
 
 const props = defineProps<{
   tagId?: number | string
@@ -114,7 +116,7 @@ const handleSearch = debounce(async () => {
       showTop: route.path === '/' ? true : false,
     })
     if (res.data.code === 0 && res.data.data) {
-      listData.value = res.data.data.records.map((record:API.HomeArticleVO) => ({
+      listData.value = res.data.data.records.map((record: API.HomeArticleVO) => ({
         ...record,
         actions: [
           { icon: EyeOutlined, text: record.readNum },
@@ -174,46 +176,189 @@ const handleCardClick = (id: number) => {
 </script>
 
 <style scoped>
-#listModal {
-}
-
 #listCardPage {
   margin: 14px 5px;
-  width: 1000px; /* 固定宽度 */
-  max-width: 100%; /* 防止溢出父容器 */
-}
-/* 确保列表容器允许固定宽度 */
-#listModal .ant-list {
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* 使卡片居中 */
+  width: 1000px;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
-.pageModule {
+@media (max-width: 1920px) {
+  #listCardPage {
+    margin: 14px 5px;
+    max-width: 756px;
+    box-sizing: border-box;
+  }
+}
+
+/* 移动端适配 */
+@media (max-width: 576px) {
+  :deep(.ant-list-item-action) {
+    display: flex !important;
+    justify-content: space-between !important; /* 均匀分布 */
+    padding: 0 16px !important; /* 增加边距 */
+    margin-top: 8px !important;
+
+    > li {
+      flex: 1; /* 等宽分布 */
+      text-align: center; /* 文字居中 */
+      margin: 0 !important;
+
+      > span {
+        display: flex;
+        flex-direction: column; /* 垂直排列 */
+        align-items: center; /* 水平居中 */
+        gap: 4px; /* 图标文字间距 */
+      }
+    }
+  }
+
+  /* 调整图标大小 */
+  .action-icon {
+    font-size: 16px !important; /* 放大图标 */
+    margin-right: 0 !important; /* 移除原有右边距 */
+  }
+
+  /* 禁用所有文本选中 */
+  .card-container {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  /* 移除点击态背景 */
+  :deep(.ant-list-item) {
+    background: transparent !important;
+  }
+
+  /* 禁用点击波纹效果 */
+  :deep(.ant-card):active {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* 移除点击动画 */
+  .card-container {
+    transition: none !important;
+  }
+
+  /* 保留原有其他移动端样式 */
+  #listCardPage {
+    width: 100%;
+    margin: 12px 0;
+    padding: 12px !important;
+  }
+
+  .article-title {
+    font-size: 18px !important;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: 2.8em;
+    text-align: left;
+  }
+
+  .excerpt {
+    font-size: 14px;
+    color: #666;
+    margin-top: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: 4.2em;
+  }
+
+  .top-tag {
+    margin-right: 8px;
+    margin-bottom: 4px;
+  }
+
+  .action-icon {
+    margin-right: 6px;
+    font-size: 14px !important;
+  }
+
+  .pageModule {
+    padding: 16px 0;
+  }
+
+  .ant-list-item {
+    display: flex;
+    flex-direction: column;
+    width: 100% !important;
+    min-height: 120px;
+    justify-content: space-between;
+  }
+
+  .ant-list-item-action {
+    margin-top: 12px;
+    width: 100%;
+    justify-content: space-around;
+    font-size: 12px;
+  }
+
+  .title-container {
+    justify-content: flex-start;
+  }
+}
+
+/* 通用样式 */
+.title-container {
   display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
   justify-content: center;
 }
 
+.article-title {
+  font-weight: 600 !important;
+  text-align: center;
+  font-size: 22px;
+}
+
+#listCardPage .pageModule {
+  text-align: center; /* 新增居中属性 */
+  overflow-x: visible; /* 修复可能存在的滚动条问题 */
+  padding: 20px 0;
+}
+/* 精准定位分页组件 */
+.pageModule :deep(.ant-pagination) {
+  display: inline-block; /* 关键属性 */
+  margin: 0 auto;
+}
 .cover-image {
   width: 200px;
   height: 200px;
-  object-fit: cover; /* 保持图片宽高比并裁剪 */
+  object-fit: cover;
   border-radius: 4px;
 }
-/* 调整卡片容器间距 */
-.card-container {
-  width: 100%; /* 继承父容器宽度 */
-}
-.custom-spin {
-  width: 100%;
-  min-height: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+
+.hidden-xs {
+  display: none;
 }
 
-/* 调整原有分页样式 */
-.pageModule {
-  padding: 20px 0;
+@media (min-width: 576px) {
+  .hidden-xs {
+    display: block;
+  }
+}
+
+.card-container {
+  width: 100%;
+  height: 100%;
+}
+
+.ant-list-item-meta {
+  width: 100%;
+}
+
+.ant-list-item-extra {
+  margin-left: 24px;
 }
 </style>

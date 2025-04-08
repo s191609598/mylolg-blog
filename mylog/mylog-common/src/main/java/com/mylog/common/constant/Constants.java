@@ -82,7 +82,7 @@ public class Constants {
     /**
      * 代理URL
      */
-    public static final String PROXY_URL = "";
+    public static final String PROXY_URL = "https://psszxhy.cn/";
     /**
      * 存储平台前缀URL
      */

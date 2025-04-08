@@ -3,6 +3,7 @@ package com.mylog.framework.interceptor;
 import com.alibaba.fastjson2.JSON;
 import com.mylog.common.annotation.RepeatSubmit;
 import com.mylog.common.utils.ServletUtils;
+import com.mylog.common.utils.resultutils.ErrorCode;
 import com.mylog.common.utils.resultutils.R;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
@@ -19,16 +20,17 @@ import java.lang.reflect.Method;
  */
 @Component
 public abstract class RepeatSubmitInterceptor implements HandlerInterceptor {
+
+
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         if (handler instanceof HandlerMethod) {
             HandlerMethod handlerMethod = (HandlerMethod) handler;
             Method method = handlerMethod.getMethod();
             RepeatSubmit annotation = method.getAnnotation(RepeatSubmit.class);
             if (annotation != null) {
                 if (this.isRepeatSubmit(request, annotation)) {
-                    R ajaxResult = R.error(annotation.message());
-                    ServletUtils.renderString(response, JSON.toJSONString(ajaxResult));
+                    ServletUtils.renderString(response, JSON.toJSONString(R.error(ErrorCode.REPEAT_ERROR)));
                     return false;
                 }
             }

@@ -1,50 +1,84 @@
 <template>
   <div id="homePage">
-    <a-row>
-      <a-col :span="4"></a-col>
-      <a-col :span="10">
-        <a-layout style="background: white">
-          <a-layout-header class="header">
+    <a-row :gutter="[16, { xs: 8, sm: 16 }]">
+      <!-- 左侧空白列（移动端隐藏） -->
+      <a-col :xs="0" :sm="4" :md="4" />
+
+      <!-- 主内容列 -->
+      <a-col :xs="24" :sm="10" :md="10" :style="{ maxWidth: '100%' }">
+        <a-layout class="main-content">
+          <!-- 轮播图仅在非移动端显示 -->
+          <a-layout-header v-if="!xsMode" class="header">
             <CarouselModal />
           </a-layout-header>
+
+          <!-- 文章列表始终显示 -->
           <a-layout-content class="content">
             <ListModal />
           </a-layout-content>
-          <a-layout-footer class="footer">
-            <div id="bottomTime">
-              <div id="bottomTime">
-                <h1>本站居然运行了 {{ runningTime.days }} 天 {{ runningTime.hours }} 时 {{ runningTime.minutes }} 分 {{ runningTime.seconds }} 秒</h1>
-              </div>
-            </div>
-          </a-layout-footer>
         </a-layout>
       </a-col>
-      <a-col :span="6">
+
+      <!-- 右侧卡片（移动端隐藏） -->
+      <a-col v-if="!xsMode" :xs="0" :md="4" :xl="6" :style="{ maxWidth: '100%' }">
         <div id="rightCard">
           <CardModal />
         </div>
       </a-col>
-      <a-col :span="4"></a-col>
+
+      <!-- 右侧空白列（移动端隐藏） -->
+      <a-col :xs="0" :sm="4" :md="4" />
     </a-row>
+
+    <!-- 移动端专属布局 -->
+    <div v-if="xsMode" class="mobile-wrapper">
+      <ListModal class="mobile-list" />
+    </div>
+
+    <!-- 底部信息 -->
+    <div class="footer">
+      <a href="https://beian.miit.gov.cn" target="_blank" rel="noopener noreferrer"
+        >鄂ICP备2025103276号-1</a
+      >
+      <div id="bottomTime">
+        <h1>
+          本站居然运行了
+          {{ runningTime.days }} 天 {{ runningTime.hours }} 时 {{ runningTime.minutes }} 分
+          {{ runningTime.seconds }} 秒
+        </h1>
+      </div>
+    </div>
   </div>
 </template>
+
 <script setup lang="ts">
 import CarouselModal from '@/pages/home/CarouselModal.vue'
 import ListModal from '@/pages/home/ListModal.vue'
 import CardModal from '@/pages/home/CardModal.vue'
 import { onMounted, onUnmounted, ref } from 'vue'
 
+const xsMode = ref(window.innerWidth <= 576)
 
-// 设置网站开始运行的时间（根据实际情况修改）
-const startTime = ref(new Date('2025-01-01T00:00:00')) // 替换为你的实际上线时间
+const handleResize = () => {
+  xsMode.value = window.innerWidth <= 576
+}
 
+onMounted(() => {
+  window.addEventListener('resize', handleResize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+})
+
+// 网站运行时间
+const startTime = ref(new Date('2025-01-01T00:00:00'))
 const runningTime = ref({
   days: 0,
   hours: 0,
   minutes: 0,
-  seconds: 0
+  seconds: 0,
 })
-
 let timer: number
 
 const calculateRuntime = () => {
@@ -58,48 +92,59 @@ const calculateRuntime = () => {
 }
 
 onMounted(() => {
-  calculateRuntime() // 立即执行一次
+  calculateRuntime()
   timer = setInterval(calculateRuntime, 1000)
 })
 
 onUnmounted(() => {
   clearInterval(timer)
 })
-
 </script>
+
 <style scoped>
 #homePage {
   text-align: center;
+  padding: 0 16px;
 }
 
-#homePage .footer {
+.main-content {
   background: white;
-  padding-top: 20px;
-  text-align: center;
-
+  margin-bottom: 24px;
 }
 
-#homePage .content {
-  background: linear-gradient(to bottom, #fefefe, #fff);
-  margin-left: 10px;
-  margin-right: 10px;
-
+.header {
+  height: 400px;
+  width: 1000px;
+  margin-left: 28px;
+  padding-inline: 0;
 }
 
-#homePage .header {
-  background: white;
-  color: unset;
-  margin-bottom: 16px;
-  padding-right: 16px;
-  padding-left: 16px;
-  padding-bottom: 16px;
-  width: 100%; /* 使头部占满整个宽度 */
-  height: 400px; /* 设置一个固定的正方形高度 */
+@media (max-width: 1920px) {
+  .header {
+    height: 340px;
+    width: 756px;
+    margin-left: 28px;
+    padding-inline: 0;
+  }
+}
+
+
+.content {
+  padding: 24px;
 }
 
 #rightCard {
-  height: 100%;
-  width: 100%;
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.footer {
+  background: white;
+  padding: 20px 0;
+  text-align: center;
+  margin-top: 24px;
 }
 
 #bottomTime h1 {
@@ -109,7 +154,33 @@ onUnmounted(() => {
 }
 
 @keyframes pulse {
-  from { opacity: 0.8; }
-  to { opacity: 1; }
+  from {
+    opacity: 0.8;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 移动端样式 */
+@media (max-width: 576px) {
+  .main-content,
+  #rightCard {
+    display: none;
+  }
+
+  .mobile-wrapper {
+    padding: 0 16px;
+  }
+
+  .mobile-list {
+    padding: 24px 0;
+  }
+
+  #bottomTime h1 {
+    font-size: 14px;
+    padding: 8px;
+    text-align: center;
+  }
 }
 </style>

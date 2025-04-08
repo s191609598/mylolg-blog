@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
-import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -17,8 +16,8 @@ import java.util.Date;
  */
 @Data
 @TableName("sys_error_log")
-public class SysErrorLog implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class SysErrorLog {
+
     /**
      * id
      */

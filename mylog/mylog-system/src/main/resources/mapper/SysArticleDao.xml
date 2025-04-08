@@ -134,4 +134,38 @@
                 and a.updateTime &gt;= #{minUpdateTime}
             </where>
         </select>
+
+    <select id="queryMyCollect" resultType="com.mylog.system.entity.home.vo.QueryMyCollectVO">
+        SELECT
+        a.id,
+        a.title,
+        a.excerpt,
+        c.createTime
+        FROM
+        sys_article AS a
+        LEFT JOIN sys_article_collect AS c ON c.articleId = a.id
+        <where>
+            and c.createBy = #{userId}
+            and a.isDelete = 0
+            and a.state in (0,1)
+        </where>
+        ORDER BY c.createTime desc
+    </select>
+
+    <select id="queryMyCollectAll" resultType="com.mylog.system.entity.home.vo.QueryMyCollectVO">
+        SELECT
+        a.id,
+        a.title,
+        a.excerpt,
+        c.createTime
+        FROM
+        sys_article AS a
+        LEFT JOIN sys_article_collect AS c ON c.articleId = a.id
+        <where>
+            and c.createBy = #{userId}
+            and a.isDelete = 0
+            and a.state in (0,1)
+        </where>
+        ORDER BY c.createTime desc
+    </select>
 </mapper>

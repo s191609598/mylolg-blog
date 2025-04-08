@@ -1,22 +1,22 @@
 <!--首页-轮播图-->
 <template>
-  <div id="carouselModal">
-    <el-carousel :interval="5000" arrow="always" style="height: 100%">
-      <el-carousel-item
-        v-for="item in listData"
-        :key="item"
-        @click="() => item.id !== undefined && toArticle(item.id)"
-        style="cursor: pointer"
-      >
-        <img id="imgbox" :src="item.cover" />
-        <div id="textbox">
-          <span id="titlebox" style="color: white"
-            ><h1 id="titletext">{{ item.title }}</h1></span
-          >
-        </div>
-      </el-carousel-item>
-    </el-carousel>
-  </div>
+    <div id="carouselModal">
+      <el-carousel :interval="5000" arrow="always" style="height: 100%">
+        <el-carousel-item
+          v-for="item in listData"
+          :key="item.id"
+          @click="() => item.id !== undefined && toArticle(item.id)"
+          style="cursor: pointer"
+        >
+          <img id="imgbox" :src="item.cover" alt="" />
+          <div id="textbox">
+            <span id="titlebox" style="color: white"
+              ><h1 id="titletext">{{ item.title }}</h1></span
+            >
+          </div>
+        </el-carousel-item>
+      </el-carousel>
+    </div>
 </template>
 
 <script setup lang="ts">
@@ -48,15 +48,17 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/deep/ .el-carousel__container {
-  height: 100%;
-}
 
 #carouselModal {
   background: black;
   height: 100%;
+  width: 100%;
+
 }
 
+:deep .el-carousel__container {
+  height: 100%;
+}
 #titlebox {
   position: absolute;
   top: 11px;
@@ -73,6 +75,7 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
+
 
   img {
     width: 100%;
@@ -116,5 +119,48 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+/* 修改图片样式 */
+#imgbox img {
+  width: auto;
+  height: auto;
+  min-width: 100%;
+  min-height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease; /* 添加过渡动画 */
+  transform: scale(1); /* 初始缩放值 */
+}
+
+/* 如果需要悬停放大效果 */
+#imgbox:hover img {
+  transform: scale(1.1); /* 等比例放大10% */
+}
+
+/* 消除可能的内边距 */
+:deep .el-carousel__item {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+:deep .el-carousel__container {
+  height: 100%;
+  perspective: 1000px; /* 增强3D渲染效果 */
+}
+/* 修改图片展示方式 */
+#imgbox img {
+  width: 100%;  /* 改为强制宽度填充 */
+  height: 100%; /* 改为强制高度填充 */
+  min-width: unset; /* 移除最小限制 */
+  min-height: unset;
+  object-fit: cover; /* 保持原有效果 */
+
+}
+
+:where(.css-dev-only-do-not-override-1p3hq3p).ant-layout .ant-layout-header {
+  height: 64px;
+  /* padding-inline: 50px; */
+  color: rgba(0, 0, 0, 0.88);
+  line-height: 64px;
+  background: #001529;
 }
 </style>

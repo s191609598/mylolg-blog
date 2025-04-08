@@ -27,7 +27,6 @@
           <a-upload
             list-type="picture-card"
             v-model:file-list="fileList"
-            @preview="handlePreview"
             :customRequest="customUpload"
             :before-upload="beforeUpload"
             @remove="handleRemoveUpload"
@@ -37,9 +36,9 @@
               <div class="ant-upload-text">上传</div>
             </div>
           </a-upload>
-          <a-modal :visible="previewVisible" :footer="null" @cancel="handleCancelPreview">
-            <img alt="example" style="width: 100%" :src="previewImage" />
-          </a-modal>
+          <!--          <a-modal :visible="previewVisible" :footer="null" @cancel="handleCancelPreview">-->
+          <!--            <img alt="example" style="max-width: 100%; height: auto;" v-if="imageUrl" :src="imageUrl" />-->
+          <!--          </a-modal>-->
         </div>
       </a-form-item>
       <a-form-item label="摘要" name="excerpt">
@@ -103,7 +102,7 @@ import { config, MdEditor, XSSPlugin } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
 import { getDefaultWhiteList } from 'xss'
 import { getCategoryAllUsingGet } from '@/api/categoryController.ts'
-import { baseUrl, uploadUrl, uploadcoverUrl } from '@/config/config.ts'
+import { baseUrl, uploadcoverUrl, uploadUrl } from '@/config/config.ts'
 import myAxios from '@/request.ts'
 
 const props = defineProps<{
@@ -262,7 +261,7 @@ watch(
     if (newVal) {
       Object.assign(formState, newVal)
       // 将数字转换为对应的中文文本
-      articleType: Number(newVal.articleType) || 0;
+      articleType: Number(newVal.articleType) || 0
       // 仅当 cover 不为空字符串时，添加到 fileList
       if (newVal.cover) {
         fileList.value = [
@@ -310,9 +309,9 @@ const handleCancel = () => {
   emit('update:open', false)
 }
 // 关闭预览
-const handleCancelPreview = () => {
-  previewVisible.value = false
-}
+// const handleCancelPreview = () => {
+//   previewVisible.value = false
+// }
 
 // 上传
 // 上传图片-校验
@@ -328,29 +327,6 @@ const beforeUpload = (file: File) => {
   return isJpgOrPng && isLt2M
 }
 
-// const handleChangeUpload = async (info: any) => {
-//   if (info.file.status === 'done') {
-//     try {
-//       // 统一使用封装请求工具
-//       const formData = new FormData()
-//       formData.append('file', info.file.originFileObj)
-//
-//       const response = await myAxios.post(actionUrl, formData, {
-//         headers: { 'Content-Type': 'multipart/form-data' },
-//       })
-//
-//       if (response.data.code === 0) {
-//         formState.cover = response.data.data.fileUrl
-//         message.success('封面图片上传成功')
-//       } else {
-//         message.error(response.data.msg || '上传失败')
-//       }
-//     } catch (error) {
-//       message.error('上传失败：' + (error as Error).message)
-//     }
-//   }
-// }
-
 // 上传图片-删除
 const handleRemoveUpload = async (fileinfo: any) => {
   // console.log(fileinfo.id)
@@ -362,35 +338,35 @@ const handleRemoveUpload = async (fileinfo: any) => {
   // }
 }
 
-const previewVisible = ref<boolean>(false)
-const previewImage = ref<string | undefined>('')
+// const previewVisible = ref<boolean>(false)
+// const previewImage = ref<string | undefined>('')
 
-function getBase64(file: File) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.readAsDataURL(file)
-    reader.onload = () => resolve(reader.result)
-    reader.onerror = (error) => reject(error)
-  })
-}
+// function getBase64(file: File) {
+//   return new Promise((resolve, reject) => {
+//     const reader = new FileReader()
+//     reader.readAsDataURL(file)
+//     reader.onload = () => resolve(reader.result)
+//     reader.onerror = (error) => reject(error)
+//   })
+// }
 
 // 上传文件-预览图片
-const handlePreview = async (file: FileItem) => {
-  if (file.url) {
-    previewImage.value = file.url
-    previewVisible.value = true
-  } else if (file.originFileObj) {
-    try {
-      file.preview = (await getBase64(file.originFileObj)) as string
-      previewImage.value = file.preview
-      previewVisible.value = true
-    } catch (error) {
-      message.error('预览图片失败')
-    }
-  } else {
-    message.error('文件对象不存在，无法预览')
-  }
-}
+// const handlePreview = async (file: FileItem) => {
+//   if (file.url) {
+//     previewImage.value = file.url
+//     previewVisible.value = true
+//   } else if (file.originFileObj) {
+//     try {
+//       file.preview = (await getBase64(file.originFileObj)) as string
+//       previewImage.value = file.preview
+//       previewVisible.value = true
+//     } catch (error) {
+//       message.error('预览图片失败')
+//     }
+//   } else {
+//     message.error('文件对象不存在，无法预览')
+//   }
+// }
 
 const onUploadImg = async (files: File[], callback: (urls: string[]) => void) => {
   try {
@@ -409,7 +385,7 @@ const onUploadImg = async (files: File[], callback: (urls: string[]) => void) =>
     callback([])
   }
 }
-
+// const imageUrl = ref<string>('')
 const customUpload = async (options: any) => {
   const { file, onProgress, onSuccess, onError } = options
   try {
@@ -427,6 +403,7 @@ const customUpload = async (options: any) => {
     })
     if (response.data.code === 0) {
       formState.cover = response.data.data.fileUrl
+      // imageUrl.value = response.data.data.fileUrl
       onSuccess(response.data.data)
       message.success('封面图片上传成功')
     } else {
@@ -436,7 +413,6 @@ const customUpload = async (options: any) => {
     onError(error)
   }
 }
-
 </script>
 
 <style lang="less">

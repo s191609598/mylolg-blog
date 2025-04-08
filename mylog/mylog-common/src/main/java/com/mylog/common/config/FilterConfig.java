@@ -14,13 +14,13 @@ import org.springframework.core.Ordered;
 @Configuration
 public class FilterConfig {
 
-    @Bean
-    public FilterRegistrationBean<XssFilter> xssFilterRegistration() {
-        FilterRegistrationBean<XssFilter> registration = new FilterRegistrationBean<>();
-        registration.setFilter(new XssFilter());
-        registration.addUrlPatterns("/*");
-        registration.setName("xssFilter");
-        registration.setOrder(Ordered.HIGHEST_PRECEDENCE); // 最高优先级
-        return registration;
-    }
+//    @Bean
+//    public FilterRegistrationBean<XssFilter> xssFilterRegistration() {
+//        FilterRegistrationBean<XssFilter> registration = new FilterRegistrationBean<>();
+//        registration.setFilter(new XssFilter());
+//        registration.addUrlPatterns("/*");
+//        registration.setName("xssFilter");
+//        registration.setOrder(Ordered.HIGHEST_PRECEDENCE); // 最高优先级
+//        return registration;
+//    }
 }

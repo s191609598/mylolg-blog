@@ -33,12 +33,10 @@
               </a-space>
               <template #overlay>
                 <a-menu>
-<!--                  <a-menu-item>-->
-<!--                    <router-link to="/my_space">-->
-<!--                      <UserOutlined />-->
-<!--                      个人中心-->
-<!--                    </router-link>-->
-<!--                  </a-menu-item>-->
+                  <a-menu-item @click="onUserinfo">
+                      <UserOutlined />
+                      个人中心
+                  </a-menu-item>
                   <a-menu-item @click="doLogout">
                     <LogoutOutlined />
                     退出登录
@@ -81,6 +79,12 @@ const doMenuClick = (info: MenuInfo) => {
 const onLogin = () => {
   router.push({
     name: '用户登录',
+    replace: true,
+  })
+}
+const onUserinfo = () => {
+  router.push({
+    name: '个人中心',
     replace: true,
   })
 }

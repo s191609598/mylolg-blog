@@ -7,6 +7,7 @@ import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.mylog.common.constant.Constants;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.util.AntPathMatcher;
 
 import java.util.*;
@@ -88,6 +89,10 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
         return isNull(map) || (map.isEmpty() && MapUtil.isEmpty(map));
     }
 
+    public static boolean isEmpty(ZSetOperations<?, ?> zSetOperations) {
+        return isNull(zSetOperations);
+    }
+
     /**
      * * 判断一个Map是否为空
      *
@@ -125,7 +130,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
      * @return true：为空 false：非空
      */
     public static boolean isNull(Object object) {
-        return object == null && ObjectUtil.isNull(object);
+        return object == null || ObjectUtil.isNull(object);
     }
 
     /**

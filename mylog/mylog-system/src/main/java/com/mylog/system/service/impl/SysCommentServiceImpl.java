@@ -8,7 +8,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.mylog.common.constant.Constants;
 import com.mylog.common.constant.RedisConstants;
 import com.mylog.common.utils.ConvertUtils;
 import com.mylog.common.utils.DateUtil;
@@ -22,7 +21,7 @@ import com.mylog.system.entity.comment.dto.CommentHomeDTO;
 import com.mylog.system.entity.comment.dto.queryCommentDTO;
 import com.mylog.system.entity.comment.vo.CommentHomeTreeVO;
 import com.mylog.system.entity.user.SysUser;
-import com.mylog.system.redis.RedisCacheUtils;
+import com.mylog.common.utils.redis.RedisCacheUtils;
 import com.mylog.system.service.SysCommentService;
 import com.mylog.system.service.SysUserService;
 import org.springframework.beans.BeanUtils;
@@ -136,15 +135,9 @@ public class SysCommentServiceImpl extends ServiceImpl<SysCommentDao, SysComment
         IPage<SysComment> page = new Page<>(dto.getPageNo(), dto.getPageSize());
         Long listSize = 0L;
         //分页
-        int current = 0;
-        int size = dto.getPageSize();
-        if (pageNo != 1) {
-            current = (pageNo - 1) * size;
-            size = current + pageSize - 1;
-        } else {
-            size = pageSize - 1;
-        }
-        vo = redisCacheUtils.getCacheList(RedisConstants.REDIS_ARTICLE_COMMENT + articleId, current, size);
+        long start = (pageNo - 1) * pageSize;
+        long end = start + pageSize - 1;
+        vo = redisCacheUtils.getCacheList(RedisConstants.REDIS_ARTICLE_COMMENT + articleId, start, end);
         //没有缓存 从数据库查询  并 缓存到redis
         if (StringUtils.isEmpty(vo)) {
             QueryWrapper<SysComment> wq = new QueryWrapper<>();
@@ -165,7 +158,7 @@ public class SysCommentServiceImpl extends ServiceImpl<SysCommentDao, SysComment
 
             AtomicInteger atomicInteger = new AtomicInteger(0);
             if (exists) {
-                atomicInteger.set(current);
+                atomicInteger.set((int) start);
             }
             vo.forEach(i -> {
                 Long rootid = i.getId();

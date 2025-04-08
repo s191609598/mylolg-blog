@@ -1,20 +1,21 @@
 package com.mylog.framework.interceptor.impl;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.alibaba.fastjson2.JSONObject;
 import com.mylog.common.annotation.RepeatSubmit;
-import com.mylog.common.constant.Constants;
 import com.mylog.common.constant.RedisConstants;
 import com.mylog.common.filter.RepeatedlyRequestWrapper;
 import com.mylog.common.utils.StringUtils;
 import com.mylog.common.utils.http.HttpHelper;
 import com.mylog.common.utils.ip.IpUtils;
 import com.mylog.framework.interceptor.RepeatSubmitInterceptor;
-import com.mylog.system.redis.RedisCacheUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,8 +37,9 @@ public class SameUrlDataInterceptor extends RepeatSubmitInterceptor {
     @Value("${sa-token.token-name}")
     private String header;
 
-    @Autowired
-    private RedisCacheUtils redisCacheUtils;
+    @Resource
+    RedissonClient redissonClient;
+
 
     @SuppressWarnings("unchecked")
     @Override
@@ -59,33 +61,45 @@ public class SameUrlDataInterceptor extends RepeatSubmitInterceptor {
         // 请求地址（作为存放cache的key值）
         String url = request.getRequestURI();
 
-        // 唯一值（没有消息头则使用  IP+UserAgent  再没有就用请求地址）
-        String submitKey = request.getHeader(header);
-        String useragent = request.getHeader(HttpHeaders.USER_AGENT);
-        String ip = IpUtils.getIp(request);
-        if (StringUtils.isEmpty(submitKey)) {
-            submitKey = useragent + "-" + ip;
-        }
-        if (StringUtils.isEmpty(submitKey)) {
-            submitKey = url;
-        }
-        System.out.println(submitKey);
-        // 唯一标识（指定key + 消息头）
-        String cacheRepeatKey = RedisConstants.REPEAT_SUBMIT_KEY + submitKey;
+        StringBuffer submitKey = new StringBuffer();
 
-        Object sessionObj = redisCacheUtils.getCacheObject(cacheRepeatKey);
-        if (sessionObj != null) {
-            Map<String, Object> sessionMap = (Map<String, Object>) sessionObj;
-            if (sessionMap.containsKey(url)) {
-                Map<String, Object> preDataMap = (Map<String, Object>) sessionMap.get(url);
-                if (compareParams(nowDataMap, preDataMap) && compareTime(nowDataMap, preDataMap, annotation.interval())) {
-                    return true;
-                }
+        // 唯一值
+        Object loginIdDefaultNull = StpUtil.getLoginIdDefaultNull();
+        if (StringUtils.isNotNull(loginIdDefaultNull)) {
+            submitKey.append(loginIdDefaultNull.toString());
+            submitKey.append("-");
+        } else {
+            String header1 = request.getHeader(header);
+            if (StringUtils.isNotBlank(header1)) {
+                submitKey.append(header1);
+                submitKey.append("-");
+            }
+            String useragent = request.getHeader(HttpHeaders.USER_AGENT);
+            if (StringUtils.isNotBlank(useragent)) {
+                submitKey.append(useragent);
+                submitKey.append("-");
+            }
+            String ip = IpUtils.getIp(request);
+            if (StringUtils.isNotBlank(ip)) {
+                submitKey.append(ip);
+                submitKey.append("-");
             }
         }
-        Map<String, Object> cacheMap = new HashMap<String, Object>();
-        cacheMap.put(url, nowDataMap);
-        redisCacheUtils.setCacheObject(cacheRepeatKey, cacheMap, annotation.interval(), TimeUnit.MILLISECONDS);
+        if (StringUtils.isNotBlank(url)) {
+            submitKey.append(url);
+            submitKey.append("-");
+        }
+        // 唯一标识
+        String cacheRepeatKey = RedisConstants.REPEAT_SUBMIT_KEY + submitKey;
+        RLock lock1 = redissonClient.getLock(cacheRepeatKey);
+        try {
+            boolean b = lock1.tryLock(0, annotation.interval(), TimeUnit.MILLISECONDS);
+            if (!b) {
+                return true;
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         return false;
     }
 

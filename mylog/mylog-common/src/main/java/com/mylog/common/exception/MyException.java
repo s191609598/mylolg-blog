@@ -48,6 +48,13 @@ public class MyException extends RuntimeException implements Serializable {
         this.msg = e.getMessage();
     }
 
+    public MyException(Throwable e) {
+        super(e);
+        this.code = ErrorCode.SYSTEM_ERROR.getCode();
+        ;
+        this.msg = e.getMessage();
+    }
+
     public MyException(int code, Throwable e, String... params) {
         super(e);
         this.code = code;

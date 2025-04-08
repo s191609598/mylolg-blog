@@ -19,6 +19,7 @@ import com.mylog.system.service.SysConfigService;
 import com.mylog.system.service.SysFileService;
 import io.minio.errors.MinioException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -34,6 +35,9 @@ import java.io.IOException;
 @Slf4j
 @Service
 public class SysFileServiceImpl extends ServiceImpl<SysFileDao, SysFile> implements SysFileService {
+
+    @Value("${hostip}")
+    private String hostip;
 
     @Resource
     MinIOUtil minIOUtil;
@@ -139,7 +143,7 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileDao, SysFile> impleme
         if (save) {
             FileVO vo = new FileVO();
             vo.setId(sysFile.getId());
-            if (sysFile.getPlatform().equals(Constants.FILE_PLATFORM_MINIO)) {
+            if (sysFile.getPlatform().equals(Constants.FILE_PLATFORM_MINIO) && StringUtils.isNoneBlank(hostip) && !StringUtils.contains(hostip, "192.168.124")) {
                 vo.setFileUrl(sysFile.getProxyUrl());
             } else {
                 vo.setFileUrl(sysFile.getFileUrl());

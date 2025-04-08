@@ -52,9 +52,17 @@ public class RedisConstants {
      */
     public static final String REDIS_ARTICLE_UP_NUM = "article_up_num:";
     /**
+     * 文章点赞记录
+     */
+    public static final String REDIS_ARTICLE_UP_RECORD = "article_up_record:";
+    /**
      * 文章收藏量
      */
     public static final String REDIS_ARTICLE_COLLECT_NUM = "article_collect_num:";
+    /**
+     * 文章收藏记录
+     */
+    public static final String REDIS_ARTICLE_COLLECT_RECORD = "article_collect_record:";
     /**
      * 标签
      */
@@ -91,4 +99,9 @@ public class RedisConstants {
      * 字典管理 cache key
      */
     public static final String SYS_DICT_KEY = "sys_dict:";
+    /**
+     * 用户收藏
+     */
+    public static final String USER_COLLECT_KEY = "user_collect:";
+
 }

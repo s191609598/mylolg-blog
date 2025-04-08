@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.mylog.system.entity.article.SysArticle;
 import com.mylog.system.entity.article.dto.*;
 import com.mylog.system.entity.article.vo.*;
+import com.mylog.system.entity.home.dto.QueryMyCollectDTO;
+import com.mylog.system.entity.home.vo.QueryMyCollectVO;
 
 import java.util.Date;
 import java.util.List;
@@ -117,4 +119,25 @@ public interface SysArticleService extends IService<SysArticle> {
      */
     List<ArticleEsDTO> listSyncArticle(Date minUpdateTime);
 
+    /**
+     * 查询我的收藏
+     * @param dto
+     * @return
+     */
+
+   IPage<QueryMyCollectVO>  queryMyCollect(QueryMyCollectDTO dto);
+
+    /**
+     * 获取阅读数量
+     * @param id
+     * @return
+     */
+   Integer getReadNum(Long id,Boolean isRecord);
+
+    /**
+     * 获取评论数量
+     * @param id
+     * @return
+     */
+    Integer getCommentNum(Long id);
 }

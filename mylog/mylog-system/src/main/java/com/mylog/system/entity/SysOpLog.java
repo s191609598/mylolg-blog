@@ -16,8 +16,7 @@ import java.util.Date;
  */
 @Data
 @TableName("sys_op_log")
-public class SysOpLog implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class SysOpLog  {
 
     /**
      * id

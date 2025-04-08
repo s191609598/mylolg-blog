@@ -103,5 +103,13 @@ public class HomeArticleVO implements Serializable {
      * 标签
      */
     private List<String> tags;
+    /**
+     * 是否点赞
+     */
+    private Boolean isUp;
+    /**
+     * 是否收藏
+     */
+    private Boolean isCollect;
 
 }

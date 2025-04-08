@@ -1,10 +1,9 @@
 package com.mylog.framework.interceptor;
 
-import com.mylog.common.constant.Constants;
 import com.mylog.common.constant.RedisConstants;
 import com.mylog.common.exception.MyException;
 import com.mylog.common.utils.ip.IpUtils;
-import com.mylog.system.redis.RedisCacheUtils;
+import com.mylog.common.utils.redis.RedisCacheUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;

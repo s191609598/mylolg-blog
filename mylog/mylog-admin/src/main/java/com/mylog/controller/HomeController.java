@@ -1,6 +1,7 @@
 package com.mylog.controller;
 
 import cn.dev33.satoken.annotation.SaIgnore;
+import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.captcha.GifCaptcha;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.core.lang.tree.Tree;
@@ -11,8 +12,9 @@ import com.mylog.common.constant.Constants;
 import com.mylog.common.constant.RedisConstants;
 import com.mylog.common.enums.BusinessType;
 import com.mylog.common.utils.CaptchaUtils;
-import com.mylog.common.utils.RedissonUtil;
 import com.mylog.common.utils.ip.IpUtils;
+import com.mylog.common.utils.redis.RedisCacheUtils;
+import com.mylog.common.utils.redis.RedissonUtil;
 import com.mylog.common.utils.resultutils.ErrorCode;
 import com.mylog.common.utils.resultutils.R;
 import com.mylog.common.validator.AssertUtils;
@@ -25,16 +27,16 @@ import com.mylog.system.entity.article.vo.SearchArticleByKeywordVO;
 import com.mylog.system.entity.category.vo.CategoryVO;
 import com.mylog.system.entity.comment.dto.CommentHomeDTO;
 import com.mylog.system.entity.comment.dto.queryCommentDTO;
+import com.mylog.system.entity.home.dto.QueryMyCollectDTO;
 import com.mylog.system.entity.home.vo.CaptchaVO;
+import com.mylog.system.entity.home.vo.QueryMyCollectVO;
 import com.mylog.system.entity.tag.vo.HomeTagVO;
-import com.mylog.system.redis.RedisCacheUtils;
 import com.mylog.system.service.SysArticleService;
 import com.mylog.system.service.SysCategoryService;
 import com.mylog.system.service.SysCommentService;
 import com.mylog.system.service.SysTagService;
 import org.redisson.api.RLock;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -85,6 +87,26 @@ public class HomeController {
 //    }
 
     /**
+     * 首页-搜索文章
+     *
+     * @param dto
+     * @return
+     */
+//    @SaIgnore
+//    @PostMapping("/searcharticlebykeyword")
+//    public R<IPage<SearchArticleByKeywordVO>> searchArticleByKeyword(@RequestBody SearchArticleByKeywordDTO dto) {
+//        IPage<SearchArticleByKeywordVO> searchArticleByKeywordVOIPage = sysArticleService.searchArticleByKeyword(dto);
+//        return R.ok(searchArticleByKeywordVOIPage);
+//    }
+
+    // 查看实际接收的请求头
+//    @SaIgnore
+//    @GetMapping("/debug")
+//    public ResponseEntity<?> debugHeaders(@RequestHeader HttpHeaders headers) {
+//        return ResponseEntity.ok(headers);
+//    }
+
+    /**
      * 首页-文章详情
      *
      * @param id
@@ -124,19 +146,6 @@ public class HomeController {
         List<RecommendArticleVO> recommendArticleVOS = sysArticleService.queryRecommendArticle();
         return R.ok(recommendArticleVOS);
     }
-
-    /**
-     * 首页-搜索文章
-     *
-     * @param dto
-     * @return
-     */
-//    @SaIgnore
-//    @PostMapping("/searcharticlebykeyword")
-//    public R<IPage<SearchArticleByKeywordVO>> searchArticleByKeyword(@RequestBody SearchArticleByKeywordDTO dto) {
-//        IPage<SearchArticleByKeywordVO> searchArticleByKeywordVOIPage = sysArticleService.searchArticleByKeyword(dto);
-//        return R.ok(searchArticleByKeywordVOIPage);
-//    }
 
     /**
      * 首页-ES搜索文章
@@ -236,10 +245,23 @@ public class HomeController {
     }
 
 
-    // 查看实际接收的请求头
-    @SaIgnore
-    @GetMapping("/debug")
-    public ResponseEntity<?> debugHeaders(@RequestHeader HttpHeaders headers) {
-        return ResponseEntity.ok(headers);
+    @OpLog(title = "获取我的收藏", businessType = BusinessType.QUERY)
+    @PostMapping("/querymycollect")
+    public R<IPage<QueryMyCollectVO>> queryMyCollect(@RequestBody QueryMyCollectDTO dto) {
+        AssertUtils.assertIf(dto.getPageSize() != 5, ErrorCode.PARAMS_ERROR);
+        Object loginIdDefaultNull = StpUtil.getLoginIdDefaultNull();
+        AssertUtils.isNull(loginIdDefaultNull, ErrorCode.NOT_LOGIN_ERROR);
+        Long userId = Long.valueOf(loginIdDefaultNull.toString());
+        String key = dto.getPageNo() + ":" + dto.getUserId();
+        boolean isLock = redissonUtil.lockb(key);
+        IPage<QueryMyCollectVO> pageList = null;
+        if (isLock) {
+            dto.setUserId(userId);
+            pageList = sysArticleService.queryMyCollect(dto);
+        }
+        redissonUtil.unlock(key);
+        return R.ok(pageList);
     }
+
+
 }

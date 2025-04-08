@@ -82,7 +82,8 @@ onMounted(() => {
 
 <style scoped>
 #tagListModal {
-  height: 600px;
+  max-height: 600px;
+  min-height: 200px;
   margin-bottom: 30px;
   position: relative; /* 确保spin定位准确 */
 }

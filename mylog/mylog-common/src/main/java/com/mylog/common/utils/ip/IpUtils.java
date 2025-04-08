@@ -102,7 +102,7 @@ public class IpUtils {
      */
     public static boolean internalIp(String ip) {
         byte[] addr = textToNumericFormatV4(ip);
-        return internalIp(addr) || "127.0.0.1".equals(ip);
+        return StringUtils.isNull(addr) || internalIp(addr) || "127.0.0.1".equals(ip);
     }
 
     private static boolean internalIp(byte[] addr) {
@@ -144,7 +144,7 @@ public class IpUtils {
      * @return byte 字节
      */
     public static byte[] textToNumericFormatV4(String text) {
-        if (text.length() == 0) {
+        if (text.length() == 0 || "0:0:0:0:0:0:0:1".equals(text)) {
             return null;
         }
 

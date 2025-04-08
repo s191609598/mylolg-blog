@@ -17,7 +17,7 @@ import java.util.List;
  */
 public interface SysTagService extends IService<SysTag> {
     /**
-     * 根据标签名称获取标签对象  TODO  可以缓存起来  用map结构
+     * 根据标签名称获取标签对象
      *
      * @param names
      * @return
@@ -28,6 +28,7 @@ public interface SysTagService extends IService<SysTag> {
     List<String> queryTagAll();
 
     List<HomeTagVO> queryHomeTagAll();
+
     List<HomeTagVO> queryTagVoAll();
 
     IPage<TagPageListVO> queryTagPageList(TagPageListDTO dto);

@@ -1,10 +1,10 @@
 package com.mylog.framework.factory;
 
 import cn.hutool.extra.spring.SpringUtil;
-import cn.hutool.log.Log;
 import com.mylog.common.annotation.OpLog;
 import com.mylog.system.entity.SysOpLog;
 import com.mylog.system.service.SysOpLogService;
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 
 import java.util.TimerTask;
@@ -13,12 +13,11 @@ import java.util.TimerTask;
  * @author pss
  * @date 2025/3/29
  */
+@Slf4j
 public class LogTaskFactory {
-    private static final Log log = Log.get();
 
 
     private static final SysOpLogService sysOpLogService = SpringUtil.getBean(SysOpLogService.class);
-
 
     /**
      * 操作日志
@@ -36,7 +35,6 @@ public class LogTaskFactory {
             public void run() {
                 try {
                     LogFactory.createSysOperationLog(sysOpLog, userId, opLog, joinPoint, result, costTime);
-
                     sysOpLogService.save(sysOpLog);
                 } catch (Exception e) {
                     log.error(">>> 创建操作日志异常，请求号为：{}，具体信息为：{}", RequestNoContext.get(), e.getMessage());

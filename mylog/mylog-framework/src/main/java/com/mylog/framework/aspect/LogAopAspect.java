@@ -2,6 +2,7 @@ package com.mylog.framework.aspect;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.ttl.TransmittableThreadLocal;
 import com.mylog.common.annotation.OpLog;
 import com.mylog.common.utils.StringUtils;
 import com.mylog.framework.manager.LogManager;
@@ -24,7 +25,8 @@ import java.lang.reflect.Method;
 @Component
 public class LogAopAspect {
 
-    private static final ThreadLocal<Long> TIME_HOLDER = new ThreadLocal<>();
+    //    private static final ThreadLocal<Long> TIME_HOLDER = new ThreadLocal<>();
+    private static final TransmittableThreadLocal<Long> TIME_HOLDER = new TransmittableThreadLocal<>();
 
     @Pointcut("@annotation(com.mylog.common.annotation.OpLog)")
     private void getLogPointCut() {
@@ -51,10 +53,18 @@ public class LogAopAspect {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        //记录请求耗时
-        Long costTime = System.currentTimeMillis() - TIME_HOLDER.get();
-        //异步记录日志
-        LogManager.me().executeOperationLog(opLog, userId, joinPoint, JSON.toJSONString(result), costTime);
+        try {
+            //记录请求耗时
+            Long costTime = System.currentTimeMillis() - TIME_HOLDER.get();
+            //异步记录日志
+            String jsonResult = "";
+            if (StringUtils.isNotNull(result)) {
+                jsonResult = JSON.toJSONString(result);
+            }
+            LogManager.me().executeOperationLog(opLog, userId, joinPoint, jsonResult, costTime);
+        } finally {
+            TIME_HOLDER.remove(); // 确保最终清理
+        }
     }
 
     /**
@@ -78,10 +88,15 @@ public class LogAopAspect {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        //记录请求耗时
-        Long costTime = System.currentTimeMillis() - TIME_HOLDER.get();
-        //异步记录日志
-        LogManager.me().executeExceptionLog(opLog, userId, joinPoint, exception, costTime);
+        try {
+            //记录请求耗时
+            Long costTime = System.currentTimeMillis() - TIME_HOLDER.get();
+            //异步记录日志
+            LogManager.me().executeExceptionLog(opLog, userId, joinPoint, exception, costTime);
+        } finally {
+            TIME_HOLDER.remove(); // 确保最终清理
+        }
+
     }
 
     /**
@@ -95,10 +110,6 @@ public class LogAopAspect {
     public Object doAround(ProceedingJoinPoint joinPoint) throws Throwable {
         // 将耗时传递给后续通知
         TIME_HOLDER.set(System.currentTimeMillis());
-        try {
-            return joinPoint.proceed();
-        } finally {
-            TIME_HOLDER.remove();
-        }
+        return joinPoint.proceed();
     }
 }

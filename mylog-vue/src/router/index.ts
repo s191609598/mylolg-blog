@@ -12,6 +12,7 @@ import CategoryAdminPage from '@/pages/admin/category/CategoryAdminPage.vue'
 import ArticleTagList from '@/pages/article/ArticleTagList.vue'
 import ArticleCategoryList from '@/pages/article/ArticleCategoryList.vue'
 import { HomeOutlined,FileTextOutlined,SettingOutlined,TagsOutlined,FolderOpenOutlined } from '@ant-design/icons-vue'
+import UserInfoPage from '@/pages/user/UserInfoPage.vue'
 
 //路由
 const router = createRouter({
@@ -78,6 +79,14 @@ const router = createRouter({
       path: '/home/articledetails/:id',
       name: '文章详情',
       component: ArticleDetailsPage,
+      meta: {
+        hideInMenu: true,
+      },
+    },
+    {
+      path: '/user/userinfo',
+      name: '个人中心',
+      component: UserInfoPage,
       meta: {
         hideInMenu: true,
       },

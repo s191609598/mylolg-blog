@@ -27,3 +27,4 @@ target/
 **/target/
 application-prod.yml
 /mylog/.idea
+/mylog-vue/src/config/config.ts

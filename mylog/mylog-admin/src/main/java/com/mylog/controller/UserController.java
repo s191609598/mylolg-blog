@@ -8,11 +8,10 @@ import cn.hutool.core.util.ObjUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mylog.common.annotation.OpLog;
 import com.mylog.common.annotation.RepeatSubmit;
-import com.mylog.common.constant.Constants;
 import com.mylog.common.constant.RedisConstants;
 import com.mylog.common.enums.BusinessType;
 import com.mylog.common.exception.MyException;
-import com.mylog.common.utils.RedissonUtil;
+import com.mylog.common.utils.redis.RedissonUtil;
 import com.mylog.common.utils.StringUtils;
 import com.mylog.common.utils.ip.IpUtils;
 import com.mylog.common.utils.resultutils.ErrorCode;
@@ -25,7 +24,7 @@ import com.mylog.common.validator.group.UpdateGroup;
 import com.mylog.system.entity.user.dto.*;
 import com.mylog.system.entity.user.vo.QueryUserVO;
 import com.mylog.system.entity.user.vo.UserVO;
-import com.mylog.system.redis.RedisCacheUtils;
+import com.mylog.common.utils.redis.RedisCacheUtils;
 import com.mylog.system.service.SysUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
@@ -175,10 +174,16 @@ public class UserController {
      * @param dto
      * @return
      */
+    @OpLog(title = "首页-用户修改信息", businessType = BusinessType.UPDATE)
     @RepeatSubmit
     @PostMapping("/updateuser")
     public R<Boolean> updateUser(@RequestBody UpdateUserDTO dto) {
         ValidatorUtils.validateEntity(dto);
+        //获取当前登录用户
+        Object loginIdDefaultNull = StpUtil.getLoginIdDefaultNull();
+        AssertUtils.isNull(loginIdDefaultNull, "请先登录");
+        Long id = Long.valueOf(loginIdDefaultNull.toString());
+        dto.setId(id);
         String key = dto.getId().toString();
         RLock lock = redissonUtil.lock(key);
         boolean b = false;

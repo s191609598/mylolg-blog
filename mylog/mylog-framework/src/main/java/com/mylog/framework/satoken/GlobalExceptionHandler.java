@@ -41,7 +41,7 @@ public class GlobalExceptionHandler {
         this.saveLog(ErrorType.UNKNOWN_RUN_ERROR, request, e);
         String requestURI = request.getRequestURI();
         log.error("请求地址'{}',发生未知异常'{}'", requestURI, e.getMessage());
-//        e.printStackTrace();
+        e.printStackTrace();
         return R.error(e.getMessage());
     }
 
@@ -50,7 +50,7 @@ public class GlobalExceptionHandler {
         this.saveLog(ErrorType.UNKNOWN_RUN_ERROR, request, e);
         String requestURI = request.getRequestURI();
         log.error("请求地址'{}',发生未知异常'{}'", requestURI, e.getMessage());
-//        e.printStackTrace();
+        e.printStackTrace();
         return R.error(e.getCode(), e.getMsg());
     }
 
@@ -64,9 +64,17 @@ public class GlobalExceptionHandler {
     public R handlerNotLoginException(Exception e, HttpServletRequest request) {
         this.saveLog(ErrorType.TOKEN_ERROR, request, e);
         log.error("请求地址'{}',发生未登录异常'{}'", request.getRequestURI(), e.getMessage());
-//        e.printStackTrace();
+        e.printStackTrace();
         return R.error(ErrorCode.NOT_LOGIN_ERROR);
     }
+
+//    @ExceptionHandler({IllegalArgumentException.class})
+//    public R handlerIllegalArgumentException(Exception e, HttpServletRequest request) {
+////        this.saveLog(ErrorType.TOKEN_ERROR, request, e);
+//        log.error("请求地址'{}',发生未登录异常'{}'", request.getRequestURI(), e.getMessage());
+////        e.printStackTrace();
+//        return R.error(ErrorCode.REPEAT_ERROR);
+//    }
 
     /**
      * 记录异常日志

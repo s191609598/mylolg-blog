@@ -22,7 +22,7 @@
         <spring-cloud-dependencies.version>2021.0.5</spring-cloud-dependencies.version>
         <hutool.version>5.8.36</hutool.version>
         <commons-lang3>3.13.0</commons-lang3>
-        <fastjson2.version>2.0.54</fastjson2.version>
+        <fastjson2.version>2.0.57</fastjson2.version>
         <mybatis-plus.version>3.5.7</mybatis-plus.version>
         <commons.io.version>2.13.0</commons.io.version>
         <pagehelper.boot.version>1.4.2</pagehelper.boot.version>
@@ -37,6 +37,7 @@
         <redisson.version>3.17.1</redisson.version>
         <commons-text.version>1.10.0</commons-text.version>
         <thumbnailator.version>0.4.19</thumbnailator.version>
+        <transmittable-thread-local.version>2.14.5</transmittable-thread-local.version>
     </properties>
 
 
@@ -214,6 +215,12 @@
             <groupId>net.coobird</groupId>
             <artifactId>thumbnailator</artifactId>
             <version>${thumbnailator.version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.alibaba/transmittable-thread-local -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>transmittable-thread-local</artifactId>
+            <version>${transmittable-thread-local.version}</version>
         </dependency>
     </dependencies>
 
