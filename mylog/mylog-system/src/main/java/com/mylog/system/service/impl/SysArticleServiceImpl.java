@@ -118,6 +118,7 @@ public class SysArticleServiceImpl extends ServiceImpl<SysArticleDao, SysArticle
                     keys.add(RedisConstants.REDIS_ARTICLE_RECOMMEND);
                     keys.add(RedisConstants.REDIS_TAG);
                     keys.add(RedisConstants.REDIS_ARTICLE + dto.getId());
+                    keys.add(RedisConstants.REDIS_ARTICLE_ADMIN + dto.getId());
                     redisCacheUtils.deleteObject(keys);
                 }
             }
@@ -161,6 +162,7 @@ public class SysArticleServiceImpl extends ServiceImpl<SysArticleDao, SysArticle
         keys.add(RedisConstants.REDIS_ARTICLE_RECOMMEND);
         keys.add(RedisConstants.REDIS_TAG);
         keys.add(RedisConstants.REDIS_ARTICLE + dto.getId());
+        keys.add(RedisConstants.REDIS_ARTICLE_ADMIN + dto.getId());
         redisCacheUtils.deleteObject(keys);
         return update;
     }
@@ -199,6 +201,7 @@ public class SysArticleServiceImpl extends ServiceImpl<SysArticleDao, SysArticle
             keys.add(RedisConstants.REDIS_ARTICLE_RECOMMEND);
             keys.add(RedisConstants.REDIS_TAG);
             keys.add(RedisConstants.REDIS_ARTICLE + dto.getId());
+            keys.add(RedisConstants.REDIS_ARTICLE_ADMIN + dto.getId());
             redisCacheUtils.deleteObject(keys);
         }
         // 返回更新结果
@@ -214,34 +217,39 @@ public class SysArticleServiceImpl extends ServiceImpl<SysArticleDao, SysArticle
     @Override
     public ArticleVO getArticleById(Long id) {
         AssertUtils.isNull(id, ErrorCode.PARAMS_ERROR);
-        SysArticle byId = this.getById(id);
-        AssertUtils.isNull(byId, ErrorCode.NOT_FOUND_ERROR);
-        ArticleVO articleVO = ConvertUtils.sourceToTarget(byId, ArticleVO.class);
-        List<SysArticleTag> list = sysArticleTagService.queryByArticleId(id);
-        if (CollUtil.isNotEmpty(list)) {
-            List<Long> tagIds = list.stream().map(SysArticleTag::getTagId).collect(Collectors.toList());
-            List<SysTag> tags = sysTagService.listByIds(tagIds);
-            if (CollUtil.isNotEmpty(tags)) {
-                List<String> tagNames = tags.stream().map(SysTag::getName).collect(Collectors.toList());
-                articleVO.setTags(tagNames);
+        ArticleVO vo = null;
+        vo = redisCacheUtils.getCacheObject(RedisConstants.REDIS_ARTICLE_ADMIN + id);
+        if (StringUtils.isNull(vo)){
+            SysArticle byId = this.getById(id);
+            AssertUtils.isNull(byId, ErrorCode.NOT_FOUND_ERROR);
+            vo = ConvertUtils.sourceToTarget(byId, ArticleVO.class);
+            List<SysArticleTag> list = sysArticleTagService.queryByArticleId(id);
+            if (CollUtil.isNotEmpty(list)) {
+                List<Long> tagIds = list.stream().map(SysArticleTag::getTagId).collect(Collectors.toList());
+                List<SysTag> tags = sysTagService.listByIds(tagIds);
+                if (CollUtil.isNotEmpty(tags)) {
+                    List<String> tagNames = tags.stream().map(SysTag::getName).collect(Collectors.toList());
+                    vo.setTags(tagNames);
+                }
             }
-        }
-        if (StringUtils.isEmpty(articleVO.getTags())) {
-            articleVO.setTags(new ArrayList<>());
-        }
+            if (StringUtils.isEmpty(vo.getTags())) {
+                vo.setTags(new ArrayList<>());
+            }
 //        获取创建人名称
-        if (StringUtils.isNotNull(articleVO.getCreateBy())) {
-            SysUser sysUser = sysUserService.getUserById(articleVO.getCreateBy());
-            articleVO.setCreateByName(sysUser.getUserName());
-        }
-        //获取文章类型
-        if (StringUtils.isNotNull(articleVO.getCategoryId())) {
-            SysCategory sysCategory = sysCategoryService.getById(articleVO.getCategoryId());
-            if (StringUtils.isNotNull(sysCategory)) {
-                articleVO.setCategoryName(sysCategory.getName());
+            if (StringUtils.isNotNull(vo.getCreateBy())) {
+                SysUser sysUser = sysUserService.getUserById(vo.getCreateBy());
+                vo.setCreateByName(sysUser.getUserName());
             }
+            //获取文章类型
+            if (StringUtils.isNotNull(vo.getCategoryId())) {
+                SysCategory sysCategory = sysCategoryService.getById(vo.getCategoryId());
+                if (StringUtils.isNotNull(sysCategory)) {
+                    vo.setCategoryName(sysCategory.getName());
+                }
+            }
+            redisCacheUtils.setCacheObject(RedisConstants.REDIS_ARTICLE_ADMIN + id, vo, 60 * 60 * 24, TimeUnit.SECONDS);
         }
-        return articleVO;
+        return vo;
     }
 
     /**

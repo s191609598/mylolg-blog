@@ -12,8 +12,11 @@
 
 
     <select id="getTagNum" resultType="com.mylog.system.entity.article.vo.TagNumVO">
-        select tagId, COUNT(articleId) as num
-        from sys_article_tag
+        SELECT tagId,
+               COUNT(articleId) AS num
+        FROM sys_article_tag as atag
+                 LEFT JOIN sys_article as a on atag.articleId = a.id
+        WHERE a.state in (0, 1) and a.isDelete = 0
         GROUP BY tagId
     </select>
 </mapper>

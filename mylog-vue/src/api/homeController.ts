@@ -33,6 +33,14 @@ export async function getHomeCategoryAllUsingGet(options?: { [key: string]: any 
   })
 }
 
+/** getInit GET /api/home/getinit */
+export async function getInitUsingGet(options?: { [key: string]: any }) {
+  return request<Record<string, any>>('/api/home/getinit', {
+    method: 'GET',
+    ...(options || {}),
+  })
+}
+
 /** queryArticleCarouselAll GET /api/home/queryarticlecarouselall */
 export async function queryArticleCarouselAllUsingGet(options?: { [key: string]: any }) {
   return request<Record<string, any>>('/api/home/queryarticlecarouselall', {

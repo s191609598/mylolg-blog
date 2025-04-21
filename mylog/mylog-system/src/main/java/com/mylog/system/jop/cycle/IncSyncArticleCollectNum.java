@@ -41,9 +41,13 @@ public class IncSyncArticleCollectNum {
                     String articleId = split[1];
                     SysArticle article = sysArticleService.getById(articleId);
                     if (StringUtils.isNotNull(article)) {
+                        Integer collectNum = redisCacheUtils.getCacheObject(i);
+                        if (StringUtils.isNull(collectNum)) {
+                            collectNum = article.getCollectNum();
+                        }
                         SysArticle update = new SysArticle();
                         update.setId(article.getId());
-                        update.setCollectNum(article.getCollectNum() + 1);
+                        update.setCollectNum(collectNum);
                         updateList.add(update);
                     }
                 }
@@ -54,6 +58,7 @@ public class IncSyncArticleCollectNum {
                 log.info("sync collectNum {} to {}", i, end);
                 sysArticleService.updateBatchById(updateList.subList(i, end));
             }
+            redisCacheUtils.deleteObject(keys);
         }
     }
 }

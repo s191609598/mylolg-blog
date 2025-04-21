@@ -2,6 +2,7 @@ package com.mylog.common.constant;
 
 /**
  * redis 常量
+ *
  * @author pss
  * @date 2025/3/31
  */
@@ -35,6 +36,7 @@ public class RedisConstants {
      * 文章
      */
     public static final String REDIS_ARTICLE = "article:";
+    public static final String REDIS_ARTICLE_ADMIN = "article_admin:";
     /**
      * 文章轮播图
      */
@@ -56,6 +58,10 @@ public class RedisConstants {
      */
     public static final String REDIS_ARTICLE_UP_RECORD = "article_up_record:";
     /**
+     * 文章点赞记录锁
+     */
+    public static final String REDIS_ARTICLE_UP_RECORD_LOCK = "article_up_record_lock:";
+    /**
      * 文章收藏量
      */
     public static final String REDIS_ARTICLE_COLLECT_NUM = "article_collect_num:";
@@ -63,6 +69,10 @@ public class RedisConstants {
      * 文章收藏记录
      */
     public static final String REDIS_ARTICLE_COLLECT_RECORD = "article_collect_record:";
+    /**
+     * 文章收藏记录锁
+     */
+    public static final String REDIS_ARTICLE_COLLECT_RECORD_LOCK = "article_collect_record_lock:";
     /**
      * 标签
      */
@@ -103,5 +113,9 @@ public class RedisConstants {
      * 用户收藏
      */
     public static final String USER_COLLECT_KEY = "user_collect:";
+    /**
+     * 备案号
+     */
+    public static final String SYS_BEIANHAO_KEY = "sys_beianhao";
 
 }

@@ -10,6 +10,7 @@ import com.mylog.system.service.SysArticleCollectService;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
@@ -27,9 +28,9 @@ public class SysArticleCollectController {
 
     @Transactional(rollbackFor = Exception.class)
     @OpLog(title = "收藏", businessType = BusinessType.INSERT)
-    @RepeatSubmit(interval = 10000)
+//    @RepeatSubmit(interval = 10000)
     @GetMapping("/collectarticle")
-    public R<Boolean> collectArticle(Long articleId) {
+    public R<Boolean> collectArticle(@RequestParam Long articleId) {
         AssertUtils.isNull(articleId, ErrorCode.PARAMS_ERROR);
         Boolean b = sysArticleCollectService.collectArticle(articleId);
         return R.ok(b);
@@ -37,9 +38,9 @@ public class SysArticleCollectController {
 
     @Transactional(rollbackFor = Exception.class)
     @OpLog(title = "取消收藏", businessType = BusinessType.DELETE)
-    @RepeatSubmit(interval = 10000)
+//    @RepeatSubmit(interval = 10000)
     @GetMapping("/no")
-    public R<Boolean> noArticle(Long articleId) {
+    public R<Boolean> noArticle(@RequestParam Long articleId) {
         AssertUtils.isNull(articleId, ErrorCode.PARAMS_ERROR);
         Boolean b = sysArticleCollectService.noArticle(articleId);
         return R.ok(b);

@@ -2,10 +2,8 @@ package com.mylog.common.utils.redis;
 
 import com.mylog.common.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.BoundSetOperations;
-import org.springframework.data.redis.core.HashOperations;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.core.*;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Component;
@@ -48,6 +46,11 @@ public class RedisCacheUtils {
         }
         return false;
     }
+
+    public <T> void setCacheObjectForever(final String key, final T value) {
+        redisTemplate.opsForValue().set(new String(key.getBytes(StandardCharsets.UTF_8)), value);
+    }
+
 
     /**
      * 缓存基本的对象，Integer、String、实体类等
@@ -477,5 +480,28 @@ public class RedisCacheUtils {
         return result != null && result == 1;
     }
 
+    /**
+     * HyperLogLog 添加元素
+     *
+     * @param key
+     * @param value
+     * @return
+     */
+    public Long addHyperLog(String key, String value) {
+        return redisTemplate.opsForHyperLogLog().add(key, value);
+    }
 
+    /**
+     * 获取 HyperLogLog 的元素数量
+     *
+     * @param key
+     * @return
+     */
+    public Long getHyperLogCount(String key) {
+        return redisTemplate.opsForHyperLogLog().size(key);
+    }
+
+    public List<Object> pipeline(SessionCallback<Object> sessionCallback) {
+        return redisTemplate.executePipelined(sessionCallback);
+    }
 }

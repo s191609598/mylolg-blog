@@ -41,7 +41,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -264,4 +266,12 @@ public class HomeController {
     }
 
 
+    @SaIgnore
+    @GetMapping("/getinit")
+    public R<Map<String, Object>> getInit() {
+        Map<String,Object> initMap = new HashMap<>();
+        String beianhao = redisCacheUtils.getCacheObject(RedisConstants.SYS_BEIANHAO_KEY);
+        initMap.put("ba",beianhao);
+        return R.ok(initMap);
+    }
 }

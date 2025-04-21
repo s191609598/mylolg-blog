@@ -82,7 +82,8 @@ public class Constants {
     /**
      * 代理URL
      */
-    public static final String PROXY_URL = "https://psszxhy.cn/";
+//    public static final String PROXY_URL = "https://psszxhy.cn/";
+    public static final String PROXY_URL = "https://pssapi.cn/";
     /**
      * 存储平台前缀URL
      */
@@ -100,6 +101,10 @@ public class Constants {
      * 存储方式
      */
     public static final String SYS_FILE_PLATFORM_TYPE = "sys.file.platform.type";
+    /**
+     * 备案号
+     */
+    public static final String SYS_BEIANHAO = "sys.beianhao";
 
 //    /**
 //     * 资源映射路径 前缀

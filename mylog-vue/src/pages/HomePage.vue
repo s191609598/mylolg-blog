@@ -38,7 +38,7 @@
     <!-- 底部信息 -->
     <div class="footer">
       <a href="https://beian.miit.gov.cn" target="_blank" rel="noopener noreferrer"
-        >鄂ICP备2025103276号-1</a
+        >{{ beianhao }}</a
       >
       <div id="bottomTime">
         <h1>
@@ -56,6 +56,7 @@ import CarouselModal from '@/pages/home/CarouselModal.vue'
 import ListModal from '@/pages/home/ListModal.vue'
 import CardModal from '@/pages/home/CardModal.vue'
 import { onMounted, onUnmounted, ref } from 'vue'
+import { getInitUsingGet } from '@/api/homeController.ts'
 
 const xsMode = ref(window.innerWidth <= 576)
 
@@ -91,8 +92,23 @@ const calculateRuntime = () => {
   runningTime.value.days = Math.floor(diff / (1000 * 60 * 60 * 24))
 }
 
+const beianhao = ref('')
+
+const getInit = async () => {
+  try {
+    const res = await getInitUsingGet()
+    if (res.data.code === 0 && res.data.data) {
+      console.log('res.data.data', res.data.data)
+      beianhao.value = res.data.data.ba
+    }
+  } catch (error) {
+    console.error('初始化失败:', error)
+  }
+}
+
 onMounted(() => {
   calculateRuntime()
+  getInit()
   timer = setInterval(calculateRuntime, 1000)
 })
 
@@ -127,7 +143,6 @@ onUnmounted(() => {
     padding-inline: 0;
   }
 }
-
 
 .content {
   padding: 24px;

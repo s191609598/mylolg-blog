@@ -16,6 +16,7 @@ import java.util.List;
 
 /**
  * 增量同步帖子点赞量
+ *
  * @author pss
  * @date 2025/4/2
  */
@@ -41,9 +42,13 @@ public class IncSyncArticleUpNum {
                     String articleId = split[1];
                     SysArticle article = sysArticleService.getById(articleId);
                     if (StringUtils.isNotNull(article)) {
+                        Integer upNum = redisCacheUtils.getCacheObject(i);
+                        if (StringUtils.isNull(upNum)) {
+                            upNum = article.getUpNum();
+                        }
                         SysArticle update = new SysArticle();
                         update.setId(article.getId());
-                        update.setUpNum(article.getUpNum() + 1);
+                        update.setUpNum(upNum);
                         updateList.add(update);
                     }
                 }
@@ -54,6 +59,7 @@ public class IncSyncArticleUpNum {
                 log.info("sync upNum {} to {}", i, end);
                 sysArticleService.updateBatchById(updateList.subList(i, end));
             }
+            redisCacheUtils.deleteObject(keys);
         }
     }
 }

@@ -2,20 +2,24 @@ package com.mylog.system.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mylog.common.constant.RedisConstants;
 import com.mylog.common.utils.StringUtils;
 import com.mylog.common.utils.redis.RedisCacheUtils;
+import com.mylog.common.utils.redis.RedissonUtil;
 import com.mylog.common.utils.resultutils.ErrorCode;
 import com.mylog.common.validator.AssertUtils;
 import com.mylog.system.dao.SysArticleDao;
 import com.mylog.system.dao.SysArticleUpDao;
+import com.mylog.system.entity.SysArticleCollect;
 import com.mylog.system.entity.SysArticleUp;
 import com.mylog.system.entity.article.SysArticle;
 import com.mylog.system.service.SysArticleUpService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -32,17 +36,28 @@ public class SysArticleUpServiceImpl extends ServiceImpl<SysArticleUpDao, SysArt
     @Resource
     SysArticleDao sysArticleDao;
 
+    @Resource
+    RedissonUtil redissonUtil;
+
     @Override
     public Boolean upArticle(Long articleId) {
         Object loginIdDefaultNull = StpUtil.getLoginIdDefaultNull();
         AssertUtils.isNull(loginIdDefaultNull, ErrorCode.NOT_LOGIN_ERROR);
         Long userId = Long.valueOf(loginIdDefaultNull.toString());
-        Integer isUpRecord = redisCacheUtils.getCacheObject(RedisConstants.REDIS_ARTICLE_UP_RECORD + userId + ":" + articleId);
-        if (StringUtils.isNull(isUpRecord) || isUpRecord == 0) {
-            redisCacheUtils.incrementValue(RedisConstants.REDIS_ARTICLE_UP_NUM + articleId);
-            redisCacheUtils.setCacheObject(RedisConstants.REDIS_ARTICLE_UP_RECORD + userId + ":" + articleId, 1, 25, TimeUnit.HOURS);
+        String lockKey = RedisConstants.REDIS_ARTICLE_UP_RECORD_LOCK + userId + ":" + articleId;
+        String upRecordKey = RedisConstants.REDIS_ARTICLE_UP_RECORD + userId + ":" + articleId;
+        synchronized (this){
+            if (redissonUtil.lock(lockKey, 2, 2, TimeUnit.SECONDS).isLocked()) {
+                Integer isUpRecord = redisCacheUtils.getCacheObject(upRecordKey);
+                if (StringUtils.isNull(isUpRecord) || isUpRecord == 0) {
+                    redisCacheUtils.incrementValue(RedisConstants.REDIS_ARTICLE_UP_NUM + articleId);
+                    redisCacheUtils.setCacheObject(upRecordKey, 1, 25, TimeUnit.HOURS);
+                    redissonUtil.unlock(lockKey);
+                    return true;
+                }
+            }
         }
-        return true;
+        return false;
     }
 
     @Override
@@ -50,12 +65,22 @@ public class SysArticleUpServiceImpl extends ServiceImpl<SysArticleUpDao, SysArt
         Object loginIdDefaultNull = StpUtil.getLoginIdDefaultNull();
         AssertUtils.isNull(loginIdDefaultNull, ErrorCode.NOT_LOGIN_ERROR);
         Long userId = Long.valueOf(loginIdDefaultNull.toString());
-        Integer isUpRecord = redisCacheUtils.getCacheObject(RedisConstants.REDIS_ARTICLE_UP_RECORD + userId + ":" + articleId);
-        if (StringUtils.isNotNull(isUpRecord) && isUpRecord == 1) {
-            redisCacheUtils.decrement(RedisConstants.REDIS_ARTICLE_UP_NUM + articleId);
-            redisCacheUtils.setCacheObject(RedisConstants.REDIS_ARTICLE_UP_RECORD + userId + ":" + articleId, 0, 25, TimeUnit.HOURS);
+        String lockKey = RedisConstants.REDIS_ARTICLE_UP_RECORD_LOCK + userId + ":" + articleId;
+        String upRecordKey = RedisConstants.REDIS_ARTICLE_UP_RECORD + userId + ":" + articleId;
+        synchronized (this){
+            if (redissonUtil.lock(lockKey, 2, 2, TimeUnit.SECONDS).isLocked()) {
+                Integer isUpRecord = redisCacheUtils.getCacheObject(upRecordKey);
+                if (StringUtils.isNotNull(isUpRecord) && isUpRecord == 1) {
+                    redisCacheUtils.decrement(RedisConstants.REDIS_ARTICLE_UP_NUM + articleId);
+                    redisCacheUtils.setCacheObject(upRecordKey, 0, 25, TimeUnit.HOURS);
+                    redissonUtil.unlock(lockKey);
+                    return true;
+                }
+            }
         }
-        return true;
+        return false;
+
+
     }
 
     @Override
@@ -97,6 +122,20 @@ public class SysArticleUpServiceImpl extends ServiceImpl<SysArticleUpDao, SysArt
             isUp = true;
         }
         return isUp;
+    }
+
+    @Override
+    public Boolean deleteCollects(List<SysArticleUp> deletes) {
+        if (StringUtils.isNotEmpty(deletes)) {
+            UpdateWrapper<SysArticleUp> wq = new UpdateWrapper();
+            wq.and(i ->{
+                deletes.forEach(j ->{
+                    i.and(k -> k.eq("articleId", j.getArticleId()).eq("createBy", j.getCreateBy()));
+                });
+            });
+            this.remove(wq);
+        }
+        return true;
     }
 }
 

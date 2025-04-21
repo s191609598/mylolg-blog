@@ -107,7 +107,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { type CSSProperties, onMounted, reactive, ref, watch } from 'vue'
+import { type CSSProperties, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import {
   CommentOutlined,
@@ -179,7 +179,6 @@ const searchParams = reactive<API.queryCommentDTO>({
 })
 // 评论数据
 const comments = ref<API.CommentsTreeVO[]>([])
-
 
 //获取文章评论
 const fetchArticleComments = async () => {
@@ -253,7 +252,7 @@ const loadArticleData = async (id: string) => {
     }
   } catch (error) {
     console.error('加载文章详情失败', error)
-  }finally {
+  } finally {
     loading.value = false // 加载完成
   }
 }
@@ -274,18 +273,22 @@ const handleLike = debounce(async () => {
     if (action === 'like') {
       const res = await upArticleUsingGet({ articleId: article.value.id! })
       if (res.data.code === 0) {
-        article.value.upNum = (article.value.upNum ?? 0) + 1
-        isLiked.value = !isLiked.value
-        message.success('点赞成功')
+        if (res.data.data) {
+          article.value.upNum = (article.value.upNum ?? 0) + 1
+          isLiked.value = !isLiked.value
+          message.success('点赞成功')
+        }
       } else {
         message.error(res.data.msg)
       }
     } else {
       const res = await noArticleUsingGet1({ articleId: article.value.id! })
       if (res.data.code === 0) {
-        article.value.upNum = (article.value.upNum ?? 0) - 1
-        isLiked.value = !isLiked.value
-        message.success('已取消点赞')
+        if (res.data.data) {
+          article.value.upNum = (article.value.upNum ?? 0) - 1
+          isLiked.value = !isLiked.value
+          message.success('已取消点赞')
+        }
       } else {
         message.error(res.data.msg)
       }
@@ -305,18 +308,22 @@ const handleCollect = debounce(async () => {
     if (action === 'collect') {
       const res = await collectArticleUsingGet({ articleId: article.value.id })
       if (res.data.code === 0) {
-        article.value.collectNum = (article.value.collectNum ?? 0) + 1
-        isCollected.value = !isCollected.value
-        message.success('收藏成功')
+        if (res.data.data) {
+          article.value.collectNum = (article.value.collectNum ?? 0) + 1
+          isCollected.value = !isCollected.value
+          message.success('收藏成功')
+        }
       } else {
         message.error(res.data.msg)
       }
     } else {
       const res = await noArticleUsingGet({ articleId: article.value.id })
       if (res.data.code === 0) {
-        article.value.collectNum = (article.value.collectNum ?? 0) - 1
-        isCollected.value = !isCollected.value
-        message.success('已取消收藏')
+        if (res.data.data) {
+          article.value.collectNum = (article.value.collectNum ?? 0) - 1
+          isCollected.value = !isCollected.value
+          message.success('已取消收藏')
+        }
       } else {
         message.error(res.data.msg)
       }

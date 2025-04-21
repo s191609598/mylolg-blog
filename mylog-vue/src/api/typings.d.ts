@@ -441,7 +441,6 @@ declare namespace API {
     sex?: number
     userAvatar?: string
     userName?: string
-    userPassword?: string
     userProfile?: string
   }
 

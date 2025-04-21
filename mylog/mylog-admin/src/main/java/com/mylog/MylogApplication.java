@@ -21,7 +21,6 @@ public class MylogApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(MylogApplication.class, args);
-//        System.out.println("myLog启动啦！！！");
     }
 
 }

@@ -1,7 +1,10 @@
 package com.mylog.system.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.mylog.system.entity.SysArticleCollect;
 import com.mylog.system.entity.SysArticleUp;
+
+import java.util.List;
 
 /**
  * @author 彭上尚
@@ -16,4 +19,6 @@ public interface SysArticleUpService extends IService<SysArticleUp> {
 
     Integer getUpNum(Long articleId);
     Boolean getIsUp(Long articleId,Long userId);
+
+    Boolean deleteCollects(List<SysArticleUp> deletes );
 }

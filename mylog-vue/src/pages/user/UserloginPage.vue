@@ -50,8 +50,8 @@ const handleSubmit = async (values: any) => {
   try {
     const res = await loginUsingPost(values)
     if (res.data.code === 0) {
-      const token = res.data.data?.tokenValue
-      const tokenTimeout = res.data.data?.tokenTimeout
+      const token = res.data.data.data?.tokenValue
+      const tokenTimeout = res.data.data.data?.tokenTimeout
       if (token) {
         localStorage.setItem(
           'auth_data',

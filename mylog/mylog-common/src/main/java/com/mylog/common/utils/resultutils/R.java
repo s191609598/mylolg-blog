@@ -54,8 +54,8 @@ public class R<T> extends HashMap<String, Object> {
     }
 
     public static <T> R<T> ok(Map<String, Object> map) {
-        R r = new R<T>();
-        r.putAll(map);
+        R<T> r = new R<T>();
+        r.put("data", map);
         r.put("code", 0);
         r.put("msg", "success");
         return r;

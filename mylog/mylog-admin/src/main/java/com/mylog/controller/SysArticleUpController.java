@@ -27,7 +27,7 @@ public class SysArticleUpController {
     private SysArticleUpService sysArticleUpService;
 
     @OpLog(title = "点赞", businessType = BusinessType.INSERT)
-    @RepeatSubmit(interval = 10000)
+//    @RepeatSubmit(interval = 10000)
     @GetMapping("/up")
     public R<Boolean> upArticle(@RequestParam Long articleId) {
         AssertUtils.isNull(articleId, ErrorCode.PARAMS_ERROR);
@@ -36,7 +36,7 @@ public class SysArticleUpController {
     }
 
     @OpLog(title = "取消点赞", businessType = BusinessType.DELETE)
-    @RepeatSubmit(interval = 10000)
+//    @RepeatSubmit(interval = 10000)
     @GetMapping("/no")
     public R<Boolean> noArticle(@RequestParam Long articleId) {
         AssertUtils.isNull(articleId, ErrorCode.PARAMS_ERROR);

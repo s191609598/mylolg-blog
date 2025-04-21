@@ -3,6 +3,7 @@ package com.mylog.system.jop.cycle;
 import com.mylog.common.constant.RedisConstants;
 import com.mylog.common.utils.StringUtils;
 import com.mylog.common.utils.redis.RedisCacheUtils;
+import com.mylog.system.entity.SysArticleCollect;
 import com.mylog.system.entity.SysArticleUp;
 import com.mylog.system.service.SysArticleUpService;
 import lombok.extern.slf4j.Slf4j;
@@ -34,22 +35,40 @@ public class IncSyncArticleUpRecord {
         if (StringUtils.isNotEmpty(keys)) {
             final int pageSize = 500;
             List<SysArticleUp> adds = new ArrayList<>();
+            List<SysArticleUp> deletes = new ArrayList<>();
             keys.forEach(i -> {
                 String[] split = i.split(":");
                 if (split.length == 3) {
                     String userId = split[1];
                     String articleId = split[2];
+                    Integer isCollect = redisCacheUtils.getCacheObject(i);
                     SysArticleUp sysArticleUp = new SysArticleUp();
                     sysArticleUp.setCreateBy(Long.valueOf(userId));
                     sysArticleUp.setArticleId(Long.valueOf(articleId));
-                    adds.add(sysArticleUp);
+                    if (isCollect > 0) {
+                        adds.add(sysArticleUp);
+                    } else {
+                        deletes.add(sysArticleUp);
+                    }
                 }
             });
-            int total = adds.size();
-            for (int i = 0; i < total; i += pageSize) {
-                int end = Math.min(i + pageSize, total);
-                sysArticleUpService.saveBatch(adds.subList(i, end));
+            //新增处理
+            if (StringUtils.isNotEmpty(adds)) {
+                int total = adds.size();
+                for (int i = 0; i < total; i += pageSize) {
+                    int end = Math.min(i + pageSize, total);
+                    sysArticleUpService.saveBatch(adds.subList(i, end));
+                }
             }
+            //删除处理
+            if (StringUtils.isNotEmpty(deletes)) {
+                int total = deletes.size();
+                for (int i = 0; i < total; i += pageSize) {
+                    int end = Math.min(i + pageSize, total);
+                    sysArticleUpService.deleteCollects(deletes.subList(i, end));
+                }
+            }
+            redisCacheUtils.deleteObject(keys);
         }
     }
 }

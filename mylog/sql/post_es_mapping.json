@@ -1,3 +1,4 @@
+//PUT /article_index_v1
 {
   "aliases": {
     "article_index": {}
