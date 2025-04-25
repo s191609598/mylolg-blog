@@ -5,7 +5,7 @@ package com.mylog.common.constant;
  *
  * @author pss
  */
-public class Constants {
+public interface Constants {
     /**
      * UTF-8 字符集
      */

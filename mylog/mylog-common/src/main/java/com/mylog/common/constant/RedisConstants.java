@@ -6,7 +6,7 @@ package com.mylog.common.constant;
  * @author pss
  * @date 2025/3/31
  */
-public class RedisConstants {
+public interface RedisConstants {
     /**
      * 防重提交 redis key
      */
@@ -53,14 +53,27 @@ public class RedisConstants {
      * 文章点赞量
      */
     public static final String REDIS_ARTICLE_UP_NUM = "article_up_num:";
+//    /**
+//     * 文章点赞记录
+//     */
+//    public static final String REDIS_ARTICLE_UP_RECORD = "article_up_record:";
+//    /**
+//     * 文章点赞记录锁
+//     */
+//    public static final String REDIS_ARTICLE_UP_RECORD_LOCK = "article_up_record_lock:";
+
     /**
-     * 文章点赞记录
+     * 用户点赞 hash key
      */
-    public static final String REDIS_ARTICLE_UP_RECORD = "article_up_record:";
+    String REDIS_ARTICLE_UP = "article_up:";
+
     /**
-     * 文章点赞记录锁
+     * 临时 点赞记录 key
      */
-    public static final String REDIS_ARTICLE_UP_RECORD_LOCK = "article_up_record_lock:";
+    String REDIS_ARTICLE_PREFIX = "article_up:temp:%s";
+
+
+
     /**
      * 文章收藏量
      */

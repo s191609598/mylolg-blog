@@ -115,6 +115,12 @@ public class SysArticleCollectServiceImpl extends ServiceImpl<SysArticleCollectD
             }
         }
         redisCacheUtils.zsetRemove(redisKey, delVO);
+
+        Set<QueryMyCollectVO> newzSet = redisCacheUtils.getZSetByRange(redisKey, 0, -1);
+        if (StringUtils.isNull(newzSet) || StringUtils.isEmpty(newzSet)) {
+            QueryMyCollectVO nullVO = new QueryMyCollectVO();
+            redisCacheUtils.zsetAdd(redisKey, nullVO, 0);
+        }
         if (redissonUtil.lock(lockKey, 2, 2, TimeUnit.SECONDS).isLocked()) {
             Integer isCollectRecord = redisCacheUtils.getCacheObject(collectRecordKey);
             if (StringUtils.isNotNull(isCollectRecord) && isCollectRecord == 1) {
@@ -172,8 +178,8 @@ public class SysArticleCollectServiceImpl extends ServiceImpl<SysArticleCollectD
     public Boolean deleteCollects(List<SysArticleCollect> deletes) {
         if (StringUtils.isNotEmpty(deletes)) {
             UpdateWrapper<SysArticleCollect> wq = new UpdateWrapper();
-            wq.and(i ->{
-                deletes.forEach(j ->{
+            wq.and(i -> {
+                deletes.forEach(j -> {
                     i.and(k -> k.eq("articleId", j.getArticleId()).eq("createBy", j.getCreateBy()));
                 });
             });

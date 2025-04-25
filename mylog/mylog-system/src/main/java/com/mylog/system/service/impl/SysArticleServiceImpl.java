@@ -570,19 +570,19 @@ public class SysArticleServiceImpl extends ServiceImpl<SysArticleDao, SysArticle
             Long total = redisCacheUtils.zsetSize(redisKey);
             long pages = Math.floorDiv(total, pageSize);
             Set<QueryMyCollectVO> zSet = redisCacheUtils.getZSetByRange(redisKey, start, end);
-//            Boolean isNull = false;
-//            for (QueryMyCollectVO queryMyCollectVO : zSet) {
-//                if (StringUtils.isNull(queryMyCollectVO.getId())) {
-//                    isNull = true;
-//                    break;
-//                }
-//            }
-//
-//            if (total == 1 && isNull) {
-//                queryMyCollectVOIPage.setRecords(Collections.emptyList());
-//            } else {
-//
-//            }
+            Boolean isNull = false;
+            for (QueryMyCollectVO queryMyCollectVO : zSet) {
+                if (StringUtils.isNull(queryMyCollectVO.getId())) {
+                    isNull = true;
+                    break;
+                }
+            }
+
+            if (total == 1 && isNull) {
+                queryMyCollectVOIPage.setRecords(Collections.emptyList());
+            } else {
+
+            }
             queryMyCollectVOIPage = new Page<>();
             queryMyCollectVOIPage.setRecords(new ArrayList<>(StringUtils.isNotEmpty(zSet) ? zSet : Collections.emptyList()));
             queryMyCollectVOIPage.setCurrent(pageNo);

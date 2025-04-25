@@ -1,19 +1,22 @@
 package com.mylog.system.jop.cycle;
 
-import com.mylog.common.constant.RedisConstants;
-import com.mylog.common.utils.StringUtils;
-import com.mylog.common.utils.redis.RedisCacheUtils;
-import com.mylog.system.entity.SysArticleCollect;
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.text.StrPool;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.mylog.common.enums.UpTypeEnum;
+import com.mylog.common.utils.redis.RedisKeyUtil;
 import com.mylog.system.entity.SysArticleUp;
 import com.mylog.system.service.SysArticleUpService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author pss
@@ -27,48 +30,65 @@ public class IncSyncArticleUpRecord {
     SysArticleUpService sysArticleUpService;
 
     @Resource
-    RedisCacheUtils redisCacheUtils;
+    private RedisTemplate<String, Object> redisTemplate;
 
-    @Scheduled(cron = "0 15 0 * * ? ")
+
+    //    @Scheduled(cron = "0 15 0 * * ? ")
+    @Scheduled(fixedRate = 10000)
+    @Transactional(rollbackFor = Exception.class)
     public void run() {
-        Collection<String> keys = redisCacheUtils.keys(RedisConstants.REDIS_ARTICLE_UP_RECORD + "*");
-        if (StringUtils.isNotEmpty(keys)) {
-            final int pageSize = 500;
-            List<SysArticleUp> adds = new ArrayList<>();
-            List<SysArticleUp> deletes = new ArrayList<>();
-            keys.forEach(i -> {
-                String[] split = i.split(":");
-                if (split.length == 3) {
-                    String userId = split[1];
-                    String articleId = split[2];
-                    Integer isCollect = redisCacheUtils.getCacheObject(i);
-                    SysArticleUp sysArticleUp = new SysArticleUp();
-                    sysArticleUp.setCreateBy(Long.valueOf(userId));
-                    sysArticleUp.setArticleId(Long.valueOf(articleId));
-                    if (isCollect > 0) {
-                        adds.add(sysArticleUp);
-                    } else {
-                        deletes.add(sysArticleUp);
-                    }
-                }
-            });
-            //新增处理
-            if (StringUtils.isNotEmpty(adds)) {
-                int total = adds.size();
-                for (int i = 0; i < total; i += pageSize) {
-                    int end = Math.min(i + pageSize, total);
-                    sysArticleUpService.saveBatch(adds.subList(i, end));
-                }
-            }
-            //删除处理
-            if (StringUtils.isNotEmpty(deletes)) {
-                int total = deletes.size();
-                for (int i = 0; i < total; i += pageSize) {
-                    int end = Math.min(i + pageSize, total);
-                    sysArticleUpService.deleteCollects(deletes.subList(i, end));
-                }
-            }
-            redisCacheUtils.deleteObject(keys);
-        }
+        log.info("开始执行");
+        DateTime nowDate = DateUtil.date();
+        String date = DateUtil.format(nowDate, "HH:mm:") + (DateUtil.second(nowDate) / 10 - 1) * 10;
+        syncUp2DBByDate(date);
+        log.info("临时数据同步完成");
     }
+
+
+
+    public void syncUp2DBByDate(String date) {
+        // 获取到临时点赞和取消点赞数据
+        // todo 如果数据量过大，可以分批读取数据
+        String tempUpKey = RedisKeyUtil.getTempUpKey(date);
+        Map<Object, Object> allTempUpMap = redisTemplate.opsForHash().entries(tempUpKey);
+        boolean UpMapEmpty = CollUtil.isEmpty(allTempUpMap);
+        // 同步 点赞 到数据库
+        if (UpMapEmpty) {
+            return;
+        }
+        ArrayList<SysArticleUp> upList = new ArrayList<>();
+        LambdaQueryWrapper<SysArticleUp> wrapper = new LambdaQueryWrapper<>();
+        boolean needRemove = false;
+        for (Object userIdBlogIdObj : allTempUpMap.keySet()) {
+            String userIdBlogId = (String) userIdBlogIdObj;
+            String[] userIdAndBlogId = userIdBlogId.split(StrPool.COLON);
+            Long userId = Long.valueOf(userIdAndBlogId[0]);
+            Long articleId = Long.valueOf(userIdAndBlogId[1]);
+            // -1 取消点赞，1 点赞
+            Integer UpType = Integer.valueOf(allTempUpMap.get(userIdBlogId).toString());
+            if (UpType == UpTypeEnum.INCR.getValue()) {
+                SysArticleUp up = new SysArticleUp();
+                up.setCreateBy(userId);
+                up.setArticleId(articleId);
+                upList.add(up);
+            } else if (UpType == UpTypeEnum.DECR.getValue()) {
+                // 拼接查询条件，批量删除
+                // todo 数据量过大，可以分批操作
+                needRemove = true;
+                wrapper.or().eq(SysArticleUp::getCreateBy, userId).eq(SysArticleUp::getArticleId, articleId);
+            } else {
+                if (UpType != UpTypeEnum.NON.getValue()) {
+                    log.warn("数据异常：{}", userId + "," + articleId + "," + UpType);
+                }
+            }
+        }
+        // 批量插入
+        sysArticleUpService.saveBatch(upList);
+        // 批量删除
+        if (needRemove) {
+            sysArticleUpService.remove(wrapper);
+        }
+        redisTemplate.delete(tempUpKey);
+    }
+
 }
